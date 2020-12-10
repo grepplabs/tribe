@@ -65,6 +65,11 @@ func configureAPI(api *restapi.TribeAPI) http.Handler {
 			return middleware.NotImplemented("operation realms.GetRealm has not yet been implemented")
 		})
 	}
+	if api.UsersGetUserHandler == nil {
+		api.UsersGetUserHandler = users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
+		})
+	}
 
 	api.PreServerShutdown = func() {}
 

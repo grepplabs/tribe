@@ -203,6 +203,50 @@ func init() {
           }
         }
       }
+    },
+    "/realms/{realm_id}/users/{username}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get the user",
+        "operationId": "get-user",
+        "parameters": [
+          {
+            "$ref": "#/parameters/realm_id"
+          },
+          {
+            "$ref": "#/parameters/username"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "$ref": "#/definitions/GetUserResponse"
+            },
+            "x-go-name": "FoundUser"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -250,8 +294,7 @@ func init() {
         },
         "enabled": {
           "description": "Boolean representing if user is enabled or not.",
-          "type": "boolean",
-          "format": "password"
+          "type": "boolean"
         },
         "password": {
           "description": "Initial password for this user.",
@@ -314,6 +357,45 @@ func init() {
         }
       }
     },
+    "GetUserResponse": {
+      "type": "object",
+      "required": [
+        "user_id",
+        "realm_id",
+        "username"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "email": {
+          "description": "The user's email.",
+          "type": "string",
+          "format": "email"
+        },
+        "email_verified": {
+          "description": "True if the End-User's e-mail address has been verified; otherwise false.",
+          "type": "boolean"
+        },
+        "enabled": {
+          "description": "Boolean representing if user is enabled or not.",
+          "type": "boolean"
+        },
+        "realm_id": {
+          "description": "The realm identifier.",
+          "type": "string"
+        },
+        "user_id": {
+          "description": "Global user identifiert.",
+          "type": "string"
+        },
+        "username": {
+          "description": "User name that is unique in the realm",
+          "type": "string"
+        }
+      }
+    },
     "Problem": {
       "type": "object",
       "properties": {
@@ -357,6 +439,13 @@ func init() {
       "type": "string",
       "description": "Realm id.",
       "name": "realm_id",
+      "in": "path",
+      "required": true
+    },
+    "username": {
+      "type": "string",
+      "description": "Username.",
+      "name": "username",
       "in": "path",
       "required": true
     }
@@ -691,6 +780,82 @@ func init() {
           }
         }
       }
+    },
+    "/realms/{realm_id}/users/{username}": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get the user",
+        "operationId": "get-user",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Realm id.",
+            "name": "realm_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Username.",
+            "name": "username",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "$ref": "#/definitions/GetUserResponse"
+            },
+            "x-go-name": "FoundUser"
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "404": {
+            "description": "Not found.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "NotFound"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -738,8 +903,7 @@ func init() {
         },
         "enabled": {
           "description": "Boolean representing if user is enabled or not.",
-          "type": "boolean",
-          "format": "password"
+          "type": "boolean"
         },
         "password": {
           "description": "Initial password for this user.",
@@ -802,6 +966,45 @@ func init() {
         }
       }
     },
+    "GetUserResponse": {
+      "type": "object",
+      "required": [
+        "user_id",
+        "realm_id",
+        "username"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "email": {
+          "description": "The user's email.",
+          "type": "string",
+          "format": "email"
+        },
+        "email_verified": {
+          "description": "True if the End-User's e-mail address has been verified; otherwise false.",
+          "type": "boolean"
+        },
+        "enabled": {
+          "description": "Boolean representing if user is enabled or not.",
+          "type": "boolean"
+        },
+        "realm_id": {
+          "description": "The realm identifier.",
+          "type": "string"
+        },
+        "user_id": {
+          "description": "Global user identifiert.",
+          "type": "string"
+        },
+        "username": {
+          "description": "User name that is unique in the realm",
+          "type": "string"
+        }
+      }
+    },
     "Problem": {
       "type": "object",
       "properties": {
@@ -845,6 +1048,13 @@ func init() {
       "type": "string",
       "description": "Realm id.",
       "name": "realm_id",
+      "in": "path",
+      "required": true
+    },
+    "username": {
+      "type": "string",
+      "description": "Username.",
+      "name": "username",
       "in": "path",
       "required": true
     }

@@ -16,12 +16,17 @@ Realms
 
 ```
 curl -X POST -H 'Content-Type: application/json' -d '{"realm_id": "main"}' http://localhost:8080/v1/realms
+
+curl http://localhost:8080/v1/realms/main
 ```
 
 Users
 ```
 curl -X POST -H 'Content-Type: application/json' -d '{"username": "michal", "password": "hello", "enabled": true}' http://localhost:8080/v1/realms/main/users
 curl -X POST -H 'Content-Type: application/json' -d '{"username": "michal2", "password": "hello2", "enabled": false, "email": "michal2@example.com"}' http://localhost:8080/v1/realms/main/users
+
+curl http://localhost:8080/v1/realms/main/users/michal
+
 ```
 
 ```

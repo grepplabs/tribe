@@ -97,6 +97,34 @@ paths:
         default:
           "$ref": "#/responses/Unexpected"
 
+  "/realms/{realm_id}/users/{username}":
+    get:
+      tags:
+        - users
+      operationId: get-user
+      summary: Get the user
+      parameters:
+        - "$ref": "#/parameters/realm_id"
+        - "$ref": "#/parameters/username"
+      responses:
+        200:
+          description: found
+          x-go-name: FoundUser
+          schema:
+            "$ref": "#/definitions/GetUserResponse"
+        400:
+          "$ref": "#/responses/BadRequest"
+        401:
+          "$ref": "#/responses/Unauthorized"
+        403:
+          "$ref": "#/responses/Forbidden"
+        404:
+          "$ref": "#/responses/NotFound"
+        429:
+          "$ref": "#/responses/TooManyRequests"
+        default:
+          "$ref": "#/responses/Unexpected"
+
   "/-/healthy":
     get:
       summary: Health check
@@ -131,6 +159,12 @@ parameters:
   realm_id:
     name: realm_id
     description: Realm id.
+    in: path
+    required: true
+    type: string
+  username:
+    name: username
+    description: Username.
     in: path
     required: true
     type: string
@@ -274,7 +308,6 @@ definitions:
         description: Initial password for this user.
       enabled:
         type: boolean
-        format: password
         description: Boolean representing if user is enabled or not.
       email:
         type: string
@@ -304,3 +337,32 @@ definitions:
       username:
         type: string
         description: User name that is unique in the realm
+  GetUserResponse:
+    type: object
+    required:
+      - user_id
+      - realm_id
+      - username
+    properties:
+      user_id:
+        type: string
+        description: Global user identifiert.
+      created_at:
+        type: string
+        format: date-time
+      realm_id:
+        type: string
+        description: The realm identifier.
+      username:
+        type: string
+        description: User name that is unique in the realm
+      enabled:
+        type: boolean
+        description: Boolean representing if user is enabled or not.
+      email:
+        type: string
+        format: email
+        description: The user's email.
+      email_verified:
+        type: boolean
+        description: True if the End-User's e-mail address has been verified; otherwise false.
