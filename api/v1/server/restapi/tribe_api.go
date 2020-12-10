@@ -58,6 +58,9 @@ func NewTribeAPI(spec *loads.Document) *TribeAPI {
 		UsersCreateUserHandler: users.CreateUserHandlerFunc(func(params users.CreateUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.CreateUser has not yet been implemented")
 		}),
+		RealmsGetRealmHandler: realms.GetRealmHandlerFunc(func(params realms.GetRealmParams) middleware.Responder {
+			return middleware.NotImplemented("operation realms.GetRealm has not yet been implemented")
+		}),
 	}
 }
 
@@ -100,6 +103,8 @@ type TribeAPI struct {
 	RealmsCreateRealmHandler realms.CreateRealmHandler
 	// UsersCreateUserHandler sets the operation handler for the create user operation
 	UsersCreateUserHandler users.CreateUserHandler
+	// RealmsGetRealmHandler sets the operation handler for the get realm operation
+	RealmsGetRealmHandler realms.GetRealmHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -187,6 +192,9 @@ func (o *TribeAPI) Validate() error {
 	}
 	if o.UsersCreateUserHandler == nil {
 		unregistered = append(unregistered, "users.CreateUserHandler")
+	}
+	if o.RealmsGetRealmHandler == nil {
+		unregistered = append(unregistered, "realms.GetRealmHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -292,6 +300,10 @@ func (o *TribeAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/realms/{realm_id}/users"] = users.NewCreateUser(o.context, o.UsersCreateUserHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/realms/{realm_id}"] = realms.NewGetRealm(o.context, o.RealmsGetRealmHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

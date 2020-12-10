@@ -114,6 +114,47 @@ func init() {
         }
       }
     },
+    "/realms/{realm_id}": {
+      "get": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "Get the realm",
+        "operationId": "get-realm",
+        "parameters": [
+          {
+            "$ref": "#/parameters/realm_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "$ref": "#/definitions/GetRealmResponse"
+            },
+            "x-go-name": "FoundRealm"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      }
+    },
     "/realms/{realm_id}/users": {
       "post": {
         "tags": [
@@ -253,6 +294,26 @@ func init() {
         }
       }
     },
+    "GetRealmResponse": {
+      "type": "object",
+      "required": [
+        "realm_id"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": {
+          "description": "Te realm description.",
+          "type": "string"
+        },
+        "realm_id": {
+          "description": "The realm identifier.",
+          "type": "string"
+        }
+      }
+    },
     "Problem": {
       "type": "object",
       "properties": {
@@ -332,6 +393,13 @@ func init() {
         "$ref": "#/definitions/Problem"
       },
       "x-go-name": "Internal Server Error"
+    },
+    "NotFound": {
+      "description": "Not found.",
+      "schema": {
+        "$ref": "#/definitions/Problem"
+      },
+      "x-go-name": "NotFound"
     },
     "TooManyRequests": {
       "description": "Rate limiting",
@@ -460,6 +528,75 @@ func init() {
               "$ref": "#/definitions/Problem"
             },
             "x-go-name": "Conflict"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      }
+    },
+    "/realms/{realm_id}": {
+      "get": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "Get the realm",
+        "operationId": "get-realm",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Realm id.",
+            "name": "realm_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "$ref": "#/definitions/GetRealmResponse"
+            },
+            "x-go-name": "FoundRealm"
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "404": {
+            "description": "Not found.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "NotFound"
           },
           "429": {
             "description": "Rate limiting",
@@ -645,6 +782,26 @@ func init() {
         }
       }
     },
+    "GetRealmResponse": {
+      "type": "object",
+      "required": [
+        "realm_id"
+      ],
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "description": {
+          "description": "Te realm description.",
+          "type": "string"
+        },
+        "realm_id": {
+          "description": "The realm identifier.",
+          "type": "string"
+        }
+      }
+    },
     "Problem": {
       "type": "object",
       "properties": {
@@ -724,6 +881,13 @@ func init() {
         "$ref": "#/definitions/Problem"
       },
       "x-go-name": "Internal Server Error"
+    },
+    "NotFound": {
+      "description": "Not found.",
+      "schema": {
+        "$ref": "#/definitions/Problem"
+      },
+      "x-go-name": "NotFound"
     },
     "TooManyRequests": {
       "description": "Rate limiting",

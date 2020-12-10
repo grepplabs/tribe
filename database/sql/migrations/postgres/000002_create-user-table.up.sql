@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS tribe_user
 (
-    user_id            varchar(255) NOT NULL,
+    user_id            varchar(320) NOT NULL,
+    created_at         timestamp    NOT NULL DEFAULT (now() AT TIME ZONE 'utc'),
     realm_id           varchar(64)  NOT NULL,
     username           varchar(255) NOT NULL,
     encrypted_password varchar(255) NOT NULL,

@@ -4,6 +4,8 @@
 
 ```
 make build
+
+export UPPER_DB_LOG=TRACE
 ./tribe serve admin --server-port=8080
 google-chrome http://127.0.0.1:8080/v1/docs
 ```

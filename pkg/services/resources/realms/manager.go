@@ -7,4 +7,5 @@ import (
 
 type Manager interface {
 	CreateRealm(ctx context.Context, r *models.Realm) error
+	GetRealm(ctx context.Context, realmID string) (*models.Realm, error)
 }

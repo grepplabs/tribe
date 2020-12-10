@@ -38,6 +38,33 @@ paths:
         default:
           "$ref": "#/responses/Unexpected"
 
+  "/realms/{realm_id}":
+    get:
+      tags:
+        - realms
+      operationId: get-realm
+      summary: Get the realm
+      parameters:
+        - "$ref": "#/parameters/realm_id"
+      responses:
+        200:
+          description: found
+          x-go-name: FoundRealm
+          schema:
+            "$ref": "#/definitions/GetRealmResponse"
+        400:
+          "$ref": "#/responses/BadRequest"
+        401:
+          "$ref": "#/responses/Unauthorized"
+        403:
+          "$ref": "#/responses/Forbidden"
+        404:
+          "$ref": "#/responses/NotFound"
+        429:
+          "$ref": "#/responses/TooManyRequests"
+        default:
+          "$ref": "#/responses/Unexpected"
+
   "/realms/{realm_id}/users":
     post:
       tags:
@@ -127,6 +154,11 @@ responses:
     x-go-name: Forbidden
     schema:
       "$ref": "#/definitions/Problem"
+  NotFound:
+    description: Not found.
+    x-go-name: NotFound
+    schema:
+      "$ref": "#/definitions/Problem"
   Conflict:
     description: Already exists.
     x-go-name: Conflict
@@ -211,6 +243,21 @@ definitions:
         description: Additional data related to the realm
         additionalProperties:
           type: string
+  GetRealmResponse:
+    type: object
+    required:
+      - realm_id
+    properties:
+      realm_id:
+        type: string
+        description: The realm identifier.
+      created_at:
+        type: string
+        format: date-time
+      description:
+        type: string
+        description: Te realm description.
+
   CreateUserRequest:
     type: object
     required:

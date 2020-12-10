@@ -4,7 +4,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-const DefaultBCryptCost = 12
+const DefaultBCryptCost = 10
 
 type PasswordHasher struct {
 	bcryptCost int

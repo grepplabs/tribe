@@ -103,6 +103,7 @@ func (s *AdminServer) instantiateAPI() *restapi.TribeAPI {
 	api.HealthzGetHealthyHandler = handlers.NewHealthzGetHealthyHandler()
 
 	// realm
+	api.RealmsGetRealmHandler = handlers.NewGetRealmHandler(s.dbClient)
 	api.RealmsCreateRealmHandler = handlers.NewCreateRealmHandler(s.dbClient)
 
 	// users
