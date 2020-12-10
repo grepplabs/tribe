@@ -265,6 +265,7 @@ func init() {
           "description": "The realm identifier.",
           "type": "string",
           "maxLength": 64,
+          "minLength": 1,
           "pattern": "^[a-zA-Z0-9_-]*$"
         },
         "realm_metadata": {
@@ -311,7 +312,9 @@ func init() {
         "username": {
           "description": "User name that is unique in the realm",
           "type": "string",
-          "maxLength": 255
+          "maxLength": 320,
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9!$%\u0026()*+,.\\/:;\u003c=\u003e?@\\[\\]^_{|}~-]*$"
         }
       }
     },
@@ -874,6 +877,7 @@ func init() {
           "description": "The realm identifier.",
           "type": "string",
           "maxLength": 64,
+          "minLength": 1,
           "pattern": "^[a-zA-Z0-9_-]*$"
         },
         "realm_metadata": {
@@ -920,7 +924,9 @@ func init() {
         "username": {
           "description": "User name that is unique in the realm",
           "type": "string",
-          "maxLength": 255
+          "maxLength": 320,
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9!$%\u0026()*+,.\\/:;\u003c=\u003e?@\\[\\]^_{|}~-]*$"
         }
       }
     },

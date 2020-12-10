@@ -266,6 +266,7 @@ definitions:
       realm_id:
         type: string
         description: The realm identifier.
+        minLength: 1
         maxLength: 64
         pattern: '^[a-zA-Z0-9_-]*$'
       description:
@@ -301,7 +302,9 @@ definitions:
       username:
         type: string
         description: User name that is unique in the realm
-        maxLength: 255
+        minLength: 1
+        maxLength: 320
+        pattern: '^[a-zA-Z0-9!$%&()*+,.\/:;<=>?@\[\]^_{|}~-]*$'
       password:
         type: string
         format: password

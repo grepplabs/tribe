@@ -37,7 +37,9 @@ type CreateUserRequest struct {
 
 	// User name that is unique in the realm
 	// Required: true
-	// Max Length: 255
+	// Max Length: 320
+	// Min Length: 1
+	// Pattern: ^[a-zA-Z0-9!$%&()*+,.\/:;<=>?@\[\]^_{|}~-]*$
 	Username *string `json:"username"`
 }
 
@@ -95,7 +97,15 @@ func (m *CreateUserRequest) validateUsername(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MaxLength("username", "body", string(*m.Username), 255); err != nil {
+	if err := validate.MinLength("username", "body", string(*m.Username), 1); err != nil {
+		return err
+	}
+
+	if err := validate.MaxLength("username", "body", string(*m.Username), 320); err != nil {
+		return err
+	}
+
+	if err := validate.Pattern("username", "body", string(*m.Username), `^[a-zA-Z0-9!$%&()*+,.\/:;<=>?@\[\]^_{|}~-]*$`); err != nil {
 		return err
 	}
 

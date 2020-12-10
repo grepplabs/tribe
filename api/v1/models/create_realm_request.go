@@ -24,6 +24,7 @@ type CreateRealmRequest struct {
 	// The realm identifier.
 	// Required: true
 	// Max Length: 64
+	// Min Length: 1
 	// Pattern: ^[a-zA-Z0-9_-]*$
 	RealmID *string `json:"realm_id"`
 
@@ -65,6 +66,10 @@ func (m *CreateRealmRequest) validateDescription(formats strfmt.Registry) error 
 func (m *CreateRealmRequest) validateRealmID(formats strfmt.Registry) error {
 
 	if err := validate.Required("realm_id", "body", m.RealmID); err != nil {
+		return err
+	}
+
+	if err := validate.MinLength("realm_id", "body", string(*m.RealmID), 1); err != nil {
 		return err
 	}
 
