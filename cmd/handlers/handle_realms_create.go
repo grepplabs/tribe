@@ -8,6 +8,7 @@ import (
 	dtomodels "github.com/grepplabs/tribe/database/models"
 	"github.com/grepplabs/tribe/pkg"
 	"net/http"
+	"time"
 )
 
 func NewCreateRealmHandler(dbClient client.Client) apirealms.CreateRealmHandler {
@@ -23,6 +24,7 @@ type createRealmHandler struct {
 func (h *createRealmHandler) Handle(input apirealms.CreateRealmParams) middleware.Responder {
 	realm := &dtomodels.Realm{
 		RealmID:     pkg.StringValue(input.Realm.RealmID),
+		CreatedAt:   time.Now(),
 		Description: input.Realm.Description,
 	}
 

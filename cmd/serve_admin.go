@@ -36,9 +36,9 @@ func init() {
 	serveAdminCmd.Flags().IntVar(&dbConfig.MaxOpenConns, "db-max-open-conns", 25, "The maximum number of open connections to the database")
 	serveAdminCmd.Flags().DurationVar(&dbConfig.ConnMaxLifetime, "db-conn-max-lifetime", 0, "The maximum amount of time a connection may be reused")
 
-	serveAdminCmd.Flags().IntVar(&passwordBCryptCost, "security-password-bcrypt-cost", crypto.DefaultBCryptCost, "BCrypt cost used for password hashing")
+	serveAdminCmd.Flags().IntVar(&passwordBCryptCost, "security-password-bcrypt-cost", crypto.DefaultBCryptCost, "BCrypt cost used for password hashing. The minimum allowable cost is 4, default is 10")
 
-	//TODO: set after default is removed _ = serveAdminCmd.MarkFlagRequired("db-connection-url")
+	//TODO: set following after default value is removed _ = serveAdminCmd.MarkFlagRequired("db-connection-url")
 }
 
 func runtribeAdmin() {

@@ -10,6 +10,7 @@ import (
 	"github.com/grepplabs/tribe/pkg"
 	"github.com/grepplabs/tribe/pkg/crypto"
 	"net/http"
+	"time"
 )
 
 func NewCreateUserHandler(dbClient client.Client, bcryptCost int) apiusers.CreateUserHandler {
@@ -42,6 +43,7 @@ func (h *createUserHandler) Handle(input apiusers.CreateUserParams) middleware.R
 
 	user := &dtomodels.User{
 		UserID:            userID,
+		CreatedAt:         time.Now(),
 		RealmID:           input.RealmID,
 		Username:          pkg.StringValue(input.User.Username),
 		EncryptedPassword: passwordHash,
