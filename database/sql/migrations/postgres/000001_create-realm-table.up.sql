@@ -6,3 +6,5 @@ CREATE TABLE IF NOT EXISTS tribe_realm
     CONSTRAINT tribe_realm_id_pk PRIMARY KEY (realm_id),
     CONSTRAINT tribe_realm_id_pattern CHECK (realm_id ~* '^[a-zA-Z0-9_-]*$')
 );
+
+CREATE INDEX IF NOT EXISTS tribe_realm_pag_idx ON tribe_realm (created_at, realm_id);

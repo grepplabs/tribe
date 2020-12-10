@@ -16,6 +16,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS tribe_user_username_realm_id_idx ON tribe_user
 
 CREATE INDEX IF NOT EXISTS tribe_user_email_idx ON tribe_user (email);
 
-CREATE INDEX IF NOT EXISTS tribe_user_realm_id_idx ON tribe_user (realm_id);
-
 CREATE UNIQUE INDEX IF NOT EXISTS tribe_user_email_verified_idx ON tribe_user (email, realm_id) WHERE (email_verified is true);
+
+CREATE INDEX IF NOT EXISTS tribe_user_pag_idx ON tribe_user (realm_id, created_at, user_id);
