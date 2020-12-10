@@ -96,6 +96,31 @@ paths:
           "$ref": "#/responses/TooManyRequests"
         default:
           "$ref": "#/responses/Unexpected"
+    get:
+      tags:
+        - users
+      operationId: get-users
+      summary: Get users
+      parameters:
+        - "$ref": "#/parameters/realm_id"
+        - "$ref": "#/parameters/offset"
+        - "$ref": "#/parameters/limit"
+      responses:
+        # TODO: user list
+        # TODO: _link {"next" : "/realms/{realm_id}/users?limit=5&start=10", "prev" : "/realms/{realm_id}/users?limit=5&start=0"}
+        # TODO: see https://developer.atlassian.com/server/confluence/pagination-in-the-rest-api/
+        400:
+          "$ref": "#/responses/BadRequest"
+        401:
+          "$ref": "#/responses/Unauthorized"
+        403:
+          "$ref": "#/responses/Forbidden"
+        409:
+          "$ref": "#/responses/Conflict"
+        429:
+          "$ref": "#/responses/TooManyRequests"
+        default:
+          "$ref": "#/responses/Unexpected"
 
   "/realms/{realm_id}/users/{username}":
     get:
@@ -162,6 +187,19 @@ parameters:
     in: path
     required: true
     type: string
+
+  offset:
+    in: query
+    name: offset
+    type: integer
+    description: The number of items to skip before starting to collect the result set.
+
+  limit:
+    in: query
+    name: limit
+    type: integer
+    description: The numbers of entries to return.
+
   username:
     name: username
     description: Username.

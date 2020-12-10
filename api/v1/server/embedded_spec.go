@@ -156,6 +156,44 @@ func init() {
       }
     },
     "/realms/{realm_id}/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get users",
+        "operationId": "get-users",
+        "parameters": [
+          {
+            "$ref": "#/parameters/realm_id"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          }
+        ],
+        "responses": {
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
       "post": {
         "tags": [
           "users"
@@ -438,6 +476,18 @@ func init() {
     }
   },
   "parameters": {
+    "limit": {
+      "type": "integer",
+      "description": "The numbers of entries to return.",
+      "name": "limit",
+      "in": "query"
+    },
+    "offset": {
+      "type": "integer",
+      "description": "The number of items to skip before starting to collect the result set.",
+      "name": "offset",
+      "in": "query"
+    },
     "realm_id": {
       "type": "string",
       "description": "Realm id.",
@@ -708,6 +758,78 @@ func init() {
       }
     },
     "/realms/{realm_id}/users": {
+      "get": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Get users",
+        "operationId": "get-users",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Realm id.",
+            "name": "realm_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "description": "The number of items to skip before starting to collect the result set.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "description": "The numbers of entries to return.",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "409": {
+            "description": "Already exists.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Conflict"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      },
       "post": {
         "tags": [
           "users"
@@ -1050,6 +1172,18 @@ func init() {
     }
   },
   "parameters": {
+    "limit": {
+      "type": "integer",
+      "description": "The numbers of entries to return.",
+      "name": "limit",
+      "in": "query"
+    },
+    "offset": {
+      "type": "integer",
+      "description": "The number of items to skip before starting to collect the result set.",
+      "name": "offset",
+      "in": "query"
+    },
     "realm_id": {
       "type": "string",
       "description": "Realm id.",
