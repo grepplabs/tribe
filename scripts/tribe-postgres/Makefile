@@ -14,4 +14,4 @@ down:
 
 # https://github.com/golang-migrate/migrate
 migrate:
-	migrate -path $(MIGRATIONS_PATH) -database postgres://tribe:secret@localhost:5432/tribe?sslmode=disable up
+	migrate -path $(MIGRATIONS_PATH)/postgres -database postgres://tribe:secret@localhost:5432/tribe?sslmode=disable up
