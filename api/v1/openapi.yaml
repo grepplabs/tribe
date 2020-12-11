@@ -43,7 +43,7 @@ paths:
       tags:
         - realms
       operationId: get-realm
-      summary: Get the realm
+      summary: Get realm
       parameters:
         - "$ref": "#/parameters/realm_id"
       responses:
@@ -99,8 +99,8 @@ paths:
     get:
       tags:
         - users
-      operationId: get-users
-      summary: Get users
+      operationId: list-users
+      summary: List users
       parameters:
         - "$ref": "#/parameters/realm_id"
         - "$ref": "#/parameters/offset"
@@ -127,7 +127,7 @@ paths:
       tags:
         - users
       operationId: get-user
-      summary: Get the user
+      summary: Get user
       parameters:
         - "$ref": "#/parameters/realm_id"
         - "$ref": "#/parameters/username"

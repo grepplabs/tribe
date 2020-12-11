@@ -119,7 +119,7 @@ func init() {
         "tags": [
           "realms"
         ],
-        "summary": "Get the realm",
+        "summary": "Get realm",
         "operationId": "get-realm",
         "parameters": [
           {
@@ -160,8 +160,8 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Get users",
-        "operationId": "get-users",
+        "summary": "List users",
+        "operationId": "list-users",
         "parameters": [
           {
             "$ref": "#/parameters/realm_id"
@@ -247,7 +247,7 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Get the user",
+        "summary": "Get user",
         "operationId": "get-user",
         "parameters": [
           {
@@ -693,7 +693,7 @@ func init() {
         "tags": [
           "realms"
         ],
-        "summary": "Get the realm",
+        "summary": "Get realm",
         "operationId": "get-realm",
         "parameters": [
           {
@@ -762,8 +762,8 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Get users",
-        "operationId": "get-users",
+        "summary": "List users",
+        "operationId": "list-users",
         "parameters": [
           {
             "type": "string",
@@ -911,7 +911,7 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Get the user",
+        "summary": "Get user",
         "operationId": "get-user",
         "parameters": [
           {

@@ -70,9 +70,9 @@ func configureAPI(api *restapi.TribeAPI) http.Handler {
 			return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
 		})
 	}
-	if api.UsersGetUsersHandler == nil {
-		api.UsersGetUsersHandler = users.GetUsersHandlerFunc(func(params users.GetUsersParams) middleware.Responder {
-			return middleware.NotImplemented("operation users.GetUsers has not yet been implemented")
+	if api.UsersListUsersHandler == nil {
+		api.UsersListUsersHandler = users.ListUsersHandlerFunc(func(params users.ListUsersParams) middleware.Responder {
+			return middleware.NotImplemented("operation users.ListUsers has not yet been implemented")
 		})
 	}
 

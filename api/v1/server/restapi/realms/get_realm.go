@@ -31,7 +31,7 @@ func NewGetRealm(ctx *middleware.Context, handler GetRealmHandler) *GetRealm {
 
 /*GetRealm swagger:route GET /realms/{realm_id} realms getRealm
 
-Get the realm
+Get realm
 
 */
 type GetRealm struct {

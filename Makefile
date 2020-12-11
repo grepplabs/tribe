@@ -74,13 +74,3 @@ generate-client-api: api/v1/openapi.yaml
 	@# sort goimports automatically
 	@find api/v1/client/ -type f -name "*.go" -print | PATH="$(PWD)/tools:$(PATH)" xargs goimports -w
 	@find api/v1/models/ -type f -name "*.go" -print | PATH="$(PWD)/tools:$(PATH)" xargs goimports -w
-
-
-TEST_REALM=main
-test-realm:
-	curl -X POST -H 'Content-Type: application/json' -d '{"realm_id": "$(TEST_REALM)"}' http://localhost:8080/v1/realms
-
-test-users:
-	@for i in `seq 1000`; do \
-	echo "{\"username\": \"user-"`uuidgen`"-$${i}\", \"password\": \"hello\"}" |  curl -X POST -H 'Content-Type: application/json' -d @- http://localhost:8080/v1/realms/$(TEST_REALM)/users ; \
-	done

@@ -15,18 +15,18 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// NewGetUsersParams creates a new GetUsersParams object
+// NewListUsersParams creates a new ListUsersParams object
 // no default values defined in spec.
-func NewGetUsersParams() GetUsersParams {
+func NewListUsersParams() ListUsersParams {
 
-	return GetUsersParams{}
+	return ListUsersParams{}
 }
 
-// GetUsersParams contains all the bound params for the get users operation
+// ListUsersParams contains all the bound params for the list users operation
 // typically these are obtained from a http.Request
 //
-// swagger:parameters get-users
-type GetUsersParams struct {
+// swagger:parameters list-users
+type ListUsersParams struct {
 
 	// HTTP Request Object
 	HTTPRequest *http.Request `json:"-"`
@@ -49,8 +49,8 @@ type GetUsersParams struct {
 // BindRequest both binds and validates a request, it assumes that complex things implement a Validatable(strfmt.Registry) error interface
 // for simple values it will use straight method calls.
 //
-// To ensure default values, the struct must have been initialized with NewGetUsersParams() beforehand.
-func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
+// To ensure default values, the struct must have been initialized with NewListUsersParams() beforehand.
+func (o *ListUsersParams) BindRequest(r *http.Request, route *middleware.MatchedRoute) error {
 	var res []error
 
 	o.HTTPRequest = r
@@ -79,7 +79,7 @@ func (o *GetUsersParams) BindRequest(r *http.Request, route *middleware.MatchedR
 }
 
 // bindLimit binds and validates parameter Limit from query.
-func (o *GetUsersParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *ListUsersParams) bindLimit(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -101,7 +101,7 @@ func (o *GetUsersParams) bindLimit(rawData []string, hasKey bool, formats strfmt
 }
 
 // bindOffset binds and validates parameter Offset from query.
-func (o *GetUsersParams) bindOffset(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *ListUsersParams) bindOffset(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]
@@ -123,7 +123,7 @@ func (o *GetUsersParams) bindOffset(rawData []string, hasKey bool, formats strfm
 }
 
 // bindRealmID binds and validates parameter RealmID from path.
-func (o *GetUsersParams) bindRealmID(rawData []string, hasKey bool, formats strfmt.Registry) error {
+func (o *ListUsersParams) bindRealmID(rawData []string, hasKey bool, formats strfmt.Registry) error {
 	var raw string
 	if len(rawData) > 0 {
 		raw = rawData[len(rawData)-1]

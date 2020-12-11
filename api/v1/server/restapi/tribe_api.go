@@ -64,8 +64,8 @@ func NewTribeAPI(spec *loads.Document) *TribeAPI {
 		UsersGetUserHandler: users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
 		}),
-		UsersGetUsersHandler: users.GetUsersHandlerFunc(func(params users.GetUsersParams) middleware.Responder {
-			return middleware.NotImplemented("operation users.GetUsers has not yet been implemented")
+		UsersListUsersHandler: users.ListUsersHandlerFunc(func(params users.ListUsersParams) middleware.Responder {
+			return middleware.NotImplemented("operation users.ListUsers has not yet been implemented")
 		}),
 	}
 }
@@ -113,8 +113,8 @@ type TribeAPI struct {
 	RealmsGetRealmHandler realms.GetRealmHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
 	UsersGetUserHandler users.GetUserHandler
-	// UsersGetUsersHandler sets the operation handler for the get users operation
-	UsersGetUsersHandler users.GetUsersHandler
+	// UsersListUsersHandler sets the operation handler for the list users operation
+	UsersListUsersHandler users.ListUsersHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -209,8 +209,8 @@ func (o *TribeAPI) Validate() error {
 	if o.UsersGetUserHandler == nil {
 		unregistered = append(unregistered, "users.GetUserHandler")
 	}
-	if o.UsersGetUsersHandler == nil {
-		unregistered = append(unregistered, "users.GetUsersHandler")
+	if o.UsersListUsersHandler == nil {
+		unregistered = append(unregistered, "users.ListUsersHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -327,7 +327,7 @@ func (o *TribeAPI) initHandlerCache() {
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
-	o.handlers["GET"]["/realms/{realm_id}/users"] = users.NewGetUsers(o.context, o.UsersGetUsersHandler)
+	o.handlers["GET"]["/realms/{realm_id}/users"] = users.NewListUsers(o.context, o.UsersListUsersHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

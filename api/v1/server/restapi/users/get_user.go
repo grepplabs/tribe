@@ -31,7 +31,7 @@ func NewGetUser(ctx *middleware.Context, handler GetUserHandler) *GetUser {
 
 /*GetUser swagger:route GET /realms/{realm_id}/users/{username} users getUser
 
-Get the user
+Get user
 
 */
 type GetUser struct {
