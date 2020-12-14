@@ -6,6 +6,7 @@ import (
 	apimodels "github.com/grepplabs/tribe/api/v1/models"
 	apiusers "github.com/grepplabs/tribe/api/v1/server/restapi/users"
 	"github.com/grepplabs/tribe/database/client"
+	"github.com/grepplabs/tribe/database/models"
 	"github.com/grepplabs/tribe/pkg"
 	"net/http"
 )
@@ -33,7 +34,11 @@ func (h *getUserHandler) Handle(input apiusers.GetUserParams) middleware.Respond
 	if user == nil {
 		return apiusers.NewGetUserNotFound()
 	}
-	return apiusers.NewGetUserFoundUser().WithPayload(&apimodels.GetUserResponse{
+	return apiusers.NewGetUserFoundUser().WithPayload(userToGetUserResponse(user))
+}
+
+func userToGetUserResponse(user *models.User) *apimodels.GetUserResponse {
+	return &apimodels.GetUserResponse{
 		UserID:        pkg.String(user.UserID),
 		CreatedAt:     strfmt.DateTime(user.CreatedAt),
 		RealmID:       pkg.String(user.RealmID),
@@ -41,5 +46,5 @@ func (h *getUserHandler) Handle(input apiusers.GetUserParams) middleware.Respond
 		Enabled:       user.Enabled,
 		Email:         strfmt.Email(user.Email),
 		EmailVerified: user.EmailVerified,
-	})
+	}
 }

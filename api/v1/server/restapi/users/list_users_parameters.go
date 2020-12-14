@@ -13,6 +13,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // NewListUsersParams creates a new ListUsersParams object
@@ -32,10 +33,12 @@ type ListUsersParams struct {
 	HTTPRequest *http.Request `json:"-"`
 
 	/*The numbers of entries to return.
+	  Minimum: 0
 	  In: query
 	*/
 	Limit *int64
 	/*The number of items to skip before starting to collect the result set.
+	  Minimum: 0
 	  In: query
 	*/
 	Offset *int64
@@ -97,6 +100,20 @@ func (o *ListUsersParams) bindLimit(rawData []string, hasKey bool, formats strfm
 	}
 	o.Limit = &value
 
+	if err := o.validateLimit(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateLimit carries on validations for parameter Limit
+func (o *ListUsersParams) validateLimit(formats strfmt.Registry) error {
+
+	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 0, false); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -118,6 +135,20 @@ func (o *ListUsersParams) bindOffset(rawData []string, hasKey bool, formats strf
 		return errors.InvalidType("offset", "query", "int64", raw)
 	}
 	o.Offset = &value
+
+	if err := o.validateOffset(formats); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// validateOffset carries on validations for parameter Offset
+func (o *ListUsersParams) validateOffset(formats strfmt.Registry) error {
+
+	if err := validate.MinimumInt("offset", "query", int64(*o.Offset), 0, false); err != nil {
+		return err
+	}
 
 	return nil
 }

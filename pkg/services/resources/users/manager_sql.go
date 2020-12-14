@@ -30,7 +30,7 @@ func (m sqlManager) CreateUser(ctx context.Context, user *models.User) error {
 }
 func (m sqlManager) GetUser(ctx context.Context, realmID string, username string) (*models.User, error) {
 	if realmID == "" || username == "" {
-		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter realmID and username must not be empty"}
+		return nil, pkg.ErrIllegalArgument{Reason: "Input parameters realmID and username must not be empty"}
 	}
 	var user models.User
 	err := m.DBS.WithContext(ctx).Collection(user.TableName()).Find(db.Cond{"realm_id": realmID, "username": username}).One(&user)
@@ -41,4 +41,39 @@ func (m sqlManager) GetUser(ctx context.Context, realmID string, username string
 		return nil, errors.Wrap(err, "find user")
 	}
 	return &user, nil
+}
+
+func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64, limit *int64) ([]models.User, error) {
+	if realmID == "" {
+		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter realmID must not be empty"}
+	}
+	if offset != nil && int(*offset) < 0 {
+		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter offset must not be negative"}
+	}
+	if limit != nil && int(*limit) < 0 {
+		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter limit must not be negative"}
+	}
+
+	var user models.User
+	result := m.DBS.WithContext(ctx).Collection(user.TableName()).Find(db.Cond{"realm_id": realmID}).OrderBy("realm_id", "created_at")
+	if offset != nil {
+		result = result.Offset(int(*offset))
+	}
+	if limit != nil {
+		// limit 0 all elements
+		result = result.Limit(int(*limit))
+	}
+
+	var users []models.User
+	err := result.All(&users)
+	if err != nil {
+		if errors.Is(err, db.ErrNoMoreRows) {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "list users")
+	}
+
+	// entries, err := result.TotalEntries() # this executes additional query
+
+	return users, nil
 }

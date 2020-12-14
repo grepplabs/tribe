@@ -174,6 +174,16 @@ func init() {
           }
         ],
         "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetUserResponse"
+              }
+            },
+            "x-go-name": "FoundUsers"
+          },
           "400": {
             "$ref": "#/responses/BadRequest"
           },
@@ -773,12 +783,14 @@ func init() {
             "required": true
           },
           {
+            "minimum": 0,
             "type": "integer",
             "description": "The number of items to skip before starting to collect the result set.",
             "name": "offset",
             "in": "query"
           },
           {
+            "minimum": 0,
             "type": "integer",
             "description": "The numbers of entries to return.",
             "name": "limit",
@@ -786,6 +798,16 @@ func init() {
           }
         ],
         "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GetUserResponse"
+              }
+            },
+            "x-go-name": "FoundUsers"
+          },
           "400": {
             "description": "Invalid request body.",
             "schema": {
@@ -1173,12 +1195,14 @@ func init() {
   },
   "parameters": {
     "limit": {
+      "minimum": 0,
       "type": "integer",
       "description": "The numbers of entries to return.",
       "name": "limit",
       "in": "query"
     },
     "offset": {
+      "minimum": 0,
       "type": "integer",
       "description": "The number of items to skip before starting to collect the result set.",
       "name": "offset",

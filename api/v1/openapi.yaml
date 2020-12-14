@@ -109,6 +109,15 @@ paths:
         # TODO: user list
         # TODO: _link {"next" : "/realms/{realm_id}/users?limit=5&start=10", "prev" : "/realms/{realm_id}/users?limit=5&start=0"}
         # TODO: see https://developer.atlassian.com/server/confluence/pagination-in-the-rest-api/
+        200:
+          description: found
+          x-go-name: FoundUsers
+          schema: {
+             "type": "array",
+             "items": {
+                "$ref": "#/definitions/GetUserResponse"
+             }
+          }
         400:
           "$ref": "#/responses/BadRequest"
         401:
@@ -192,12 +201,14 @@ parameters:
     in: query
     name: offset
     type: integer
+    minimum: 0
     description: The number of items to skip before starting to collect the result set.
 
   limit:
     in: query
     name: limit
     type: integer
+    minimum: 0
     description: The numbers of entries to return.
 
   username:

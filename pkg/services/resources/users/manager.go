@@ -8,4 +8,5 @@ import (
 type Manager interface {
 	CreateUser(ctx context.Context, u *models.User) error
 	GetUser(ctx context.Context, realmID string, username string) (*models.User, error)
+	ListUsers(ctx context.Context, realmID string, offset *int64, limit *int64) ([]models.User, error)
 }
