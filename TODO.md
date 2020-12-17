@@ -1,3 +1,7 @@
+## tribe serverless
+* tribe as lambda
+* /users/ =>  /realms/{realm_id}/users/ => (api shortcut for a realm) => realm_id configurable, can block others that default  
+
 ## bootstrap
 * provide config to enable initial realm provisioning with admin user
 
