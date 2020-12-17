@@ -2,6 +2,10 @@
 * tribe as lambda
 * /users/ =>  /realms/{realm_id}/users/ => (api shortcut for a realm) => realm_id configurable, can block others that default  
 
+## opa + webassembly 
+* rbac https://docs.osohq.com/more/use-cases.html
+* https://github.com/golang/go/wiki/WebAssembly#getting-started 
+
 ## bootstrap
 * provide config to enable initial realm provisioning with admin user
 
