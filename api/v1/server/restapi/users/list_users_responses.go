@@ -25,7 +25,7 @@ type ListUsersFoundUsers struct {
 	/*
 	  In: Body
 	*/
-	Payload []*models.GetUserResponse `json:"body,omitempty"`
+	Payload *ListUsersFoundUsersBody `json:"body,omitempty"`
 }
 
 // NewListUsersFoundUsers creates ListUsersFoundUsers with default headers values
@@ -35,13 +35,13 @@ func NewListUsersFoundUsers() *ListUsersFoundUsers {
 }
 
 // WithPayload adds the payload to the list users found users response
-func (o *ListUsersFoundUsers) WithPayload(payload []*models.GetUserResponse) *ListUsersFoundUsers {
+func (o *ListUsersFoundUsers) WithPayload(payload *ListUsersFoundUsersBody) *ListUsersFoundUsers {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the list users found users response
-func (o *ListUsersFoundUsers) SetPayload(payload []*models.GetUserResponse) {
+func (o *ListUsersFoundUsers) SetPayload(payload *ListUsersFoundUsersBody) {
 	o.Payload = payload
 }
 
@@ -49,14 +49,11 @@ func (o *ListUsersFoundUsers) SetPayload(payload []*models.GetUserResponse) {
 func (o *ListUsersFoundUsers) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if payload == nil {
-		// return empty array
-		payload = make([]*models.GetUserResponse, 0, 50)
-	}
-
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 

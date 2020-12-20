@@ -5,15 +5,16 @@ package server
 import (
 	"crypto/tls"
 	"net/http"
+	"os"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
+	"github.com/gorilla/handlers"
+
 	"github.com/grepplabs/tribe/api/v1/server/restapi"
 	"github.com/grepplabs/tribe/api/v1/server/restapi/healthz"
-	"github.com/grepplabs/tribe/api/v1/server/restapi/realms"
-	"github.com/grepplabs/tribe/api/v1/server/restapi/users"
 )
 
 //go:generate swagger generate server --target ../../v1 --name Tribe --spec ../openapi.yaml --api-package restapi --server-package server --principal interface{} --exclude-main
@@ -50,31 +51,6 @@ func configureAPI(api *restapi.TribeAPI) http.Handler {
 			return middleware.NotImplemented("operation healthz.GetReady has not yet been implemented")
 		})
 	}
-	if api.RealmsCreateRealmHandler == nil {
-		api.RealmsCreateRealmHandler = realms.CreateRealmHandlerFunc(func(params realms.CreateRealmParams) middleware.Responder {
-			return middleware.NotImplemented("operation realms.CreateRealm has not yet been implemented")
-		})
-	}
-	if api.UsersCreateUserHandler == nil {
-		api.UsersCreateUserHandler = users.CreateUserHandlerFunc(func(params users.CreateUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation users.CreateUser has not yet been implemented")
-		})
-	}
-	if api.RealmsGetRealmHandler == nil {
-		api.RealmsGetRealmHandler = realms.GetRealmHandlerFunc(func(params realms.GetRealmParams) middleware.Responder {
-			return middleware.NotImplemented("operation realms.GetRealm has not yet been implemented")
-		})
-	}
-	if api.UsersGetUserHandler == nil {
-		api.UsersGetUserHandler = users.GetUserHandlerFunc(func(params users.GetUserParams) middleware.Responder {
-			return middleware.NotImplemented("operation users.GetUser has not yet been implemented")
-		})
-	}
-	if api.UsersListUsersHandler == nil {
-		api.UsersListUsersHandler = users.ListUsersHandlerFunc(func(params users.ListUsersParams) middleware.Responder {
-			return middleware.NotImplemented("operation users.ListUsers has not yet been implemented")
-		})
-	}
 
 	api.PreServerShutdown = func() {}
 
@@ -104,5 +80,7 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-	return handler
+
+	//TODO: see also https://github.com/didip/tollbooth
+	return handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(handlers.LoggingHandler(os.Stdout, handler))
 }

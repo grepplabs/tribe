@@ -6,6 +6,7 @@ import (
 	apimodels "github.com/grepplabs/tribe/api/v1/models"
 	apirealms "github.com/grepplabs/tribe/api/v1/server/restapi/realms"
 	"github.com/grepplabs/tribe/database/client"
+	"github.com/grepplabs/tribe/database/models"
 	"github.com/grepplabs/tribe/pkg"
 	"net/http"
 )
@@ -33,9 +34,13 @@ func (h *getRealmHandler) Handle(input apirealms.GetRealmParams) middleware.Resp
 	if realm == nil {
 		return apirealms.NewGetRealmNotFound()
 	}
-	return apirealms.NewGetRealmFoundRealm().WithPayload(&apimodels.GetRealmResponse{
+	return apirealms.NewGetRealmFoundRealm().WithPayload(realmToGetRealmResponse(realm))
+}
+
+func realmToGetRealmResponse(realm *models.Realm) *apimodels.GetRealmResponse {
+	return &apimodels.GetRealmResponse{
 		RealmID:     pkg.String(realm.RealmID),
 		CreatedAt:   strfmt.DateTime(realm.CreatedAt),
 		Description: realm.Description,
-	})
+	}
 }

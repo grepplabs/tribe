@@ -47,9 +47,6 @@ func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64
 	if realmID == "" {
 		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter realmID must not be empty"}
 	}
-	if offset != nil && int(*offset) < 0 {
-		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter offset must not be negative"}
-	}
 	if limit != nil && int(*limit) < 0 {
 		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter limit must not be negative"}
 	}
@@ -59,7 +56,7 @@ func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64
 	if offset != nil {
 		result = result.Offset(int(*offset))
 	}
-	if limit != nil {
+	if limit != nil && int(*limit) > 0 {
 		// limit 0 all elements
 		result = result.Limit(int(*limit))
 	}

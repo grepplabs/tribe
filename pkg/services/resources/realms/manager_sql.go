@@ -43,3 +43,29 @@ func (m sqlManager) GetRealm(ctx context.Context, realmID string) (*models.Realm
 	}
 	return &realm, nil
 }
+
+func (m sqlManager) ListRealms(ctx context.Context, offset *int64, limit *int64) ([]models.Realm, error) {
+	if limit != nil && int(*limit) < 0 {
+		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter limit must not be negative"}
+	}
+
+	var realm models.Realm
+	result := m.DBS.WithContext(ctx).Collection(realm.TableName()).Find().OrderBy("created_at")
+	if offset != nil {
+		result = result.Offset(int(*offset))
+	}
+	if limit != nil && int(*limit) > 0 {
+		// limit 0 all elements
+		result = result.Limit(int(*limit))
+	}
+
+	var realms []models.Realm
+	err := result.All(&realms)
+	if err != nil {
+		if errors.Is(err, db.ErrNoMoreRows) {
+			return nil, nil
+		}
+		return nil, errors.Wrap(err, "list realms")
+	}
+	return realms, nil
+}

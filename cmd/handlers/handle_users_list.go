@@ -27,9 +27,17 @@ func (h *listUsersHandler) Handle(input apiusers.ListUsersParams) middleware.Res
 			Detail:  err.Error(),
 		})
 	}
-	payload := make([]*apimodels.GetUserResponse, len(users))
+	results := make([]*apimodels.GetUserResponse, len(users))
 	for i := 0; i < len(users); i++ {
-		payload[i] = userToGetUserResponse(&users[i])
+		results[i] = userToGetUserResponse(&users[i])
+	}
+
+	payload := &apiusers.ListUsersFoundUsersBody{
+		Results: results,
+		Links: &apimodels.Links{
+			Prev: prevToken(input.Offset, input.Limit),
+			Next: nextToken(input.Offset, input.Limit, len(results)),
+		},
 	}
 	return apiusers.NewListUsersFoundUsers().WithPayload(payload)
 }

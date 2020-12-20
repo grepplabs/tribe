@@ -73,6 +73,62 @@ func init() {
       }
     },
     "/realms": {
+      "get": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "List realms",
+        "operationId": "list-realms",
+        "parameters": [
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "type": "object",
+              "required": [
+                "results"
+              ],
+              "properties": {
+                "_links": {
+                  "$ref": "#/definitions/Links"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GetRealmResponse"
+                  }
+                }
+              }
+            },
+            "x-go-name": "FoundRealms"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/responses/Conflict"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
       "post": {
         "tags": [
           "realms"
@@ -177,9 +233,20 @@ func init() {
           "200": {
             "description": "found",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/GetUserResponse"
+              "type": "object",
+              "required": [
+                "results"
+              ],
+              "properties": {
+                "_links": {
+                  "$ref": "#/definitions/Links"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GetUserResponse"
+                  }
+                }
               }
             },
             "x-go-name": "FoundUsers"
@@ -447,6 +514,19 @@ func init() {
         }
       }
     },
+    "Links": {
+      "type": "object",
+      "properties": {
+        "next": {
+          "description": "The link for the next page of results.",
+          "type": "string"
+        },
+        "prev": {
+          "description": "The link for the previous page of results.",
+          "type": "string"
+        }
+      }
+    },
     "Problem": {
       "type": "object",
       "properties": {
@@ -632,6 +712,93 @@ func init() {
       }
     },
     "/realms": {
+      "get": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "List realms",
+        "operationId": "list-realms",
+        "parameters": [
+          {
+            "type": "integer",
+            "description": "The number of items to skip before starting to collect the result set.",
+            "name": "offset",
+            "in": "query"
+          },
+          {
+            "minimum": 0,
+            "type": "integer",
+            "description": "The numbers of entries to return.",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "found",
+            "schema": {
+              "type": "object",
+              "required": [
+                "results"
+              ],
+              "properties": {
+                "_links": {
+                  "$ref": "#/definitions/Links"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GetRealmResponse"
+                  }
+                }
+              }
+            },
+            "x-go-name": "FoundRealms"
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "409": {
+            "description": "Already exists.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Conflict"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      },
       "post": {
         "tags": [
           "realms"
@@ -783,7 +950,6 @@ func init() {
             "required": true
           },
           {
-            "minimum": 0,
             "type": "integer",
             "description": "The number of items to skip before starting to collect the result set.",
             "name": "offset",
@@ -801,9 +967,20 @@ func init() {
           "200": {
             "description": "found",
             "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/GetUserResponse"
+              "type": "object",
+              "required": [
+                "results"
+              ],
+              "properties": {
+                "_links": {
+                  "$ref": "#/definitions/Links"
+                },
+                "results": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/GetUserResponse"
+                  }
+                }
               }
             },
             "x-go-name": "FoundUsers"
@@ -1155,6 +1332,19 @@ func init() {
         }
       }
     },
+    "Links": {
+      "type": "object",
+      "properties": {
+        "next": {
+          "description": "The link for the next page of results.",
+          "type": "string"
+        },
+        "prev": {
+          "description": "The link for the previous page of results.",
+          "type": "string"
+        }
+      }
+    },
     "Problem": {
       "type": "object",
       "properties": {
@@ -1202,7 +1392,6 @@ func init() {
       "in": "query"
     },
     "offset": {
-      "minimum": 0,
       "type": "integer",
       "description": "The number of items to skip before starting to collect the result set.",
       "name": "offset",

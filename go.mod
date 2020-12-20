@@ -11,6 +11,7 @@ require (
 	github.com/go-openapi/swag v0.19.12
 	github.com/go-openapi/validate v0.19.14
 	github.com/google/uuid v1.1.2
+	github.com/gorilla/handlers v1.5.1
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/lib/pq v1.9.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
