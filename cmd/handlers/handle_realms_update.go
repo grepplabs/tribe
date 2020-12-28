@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"errors"
 	"github.com/go-openapi/runtime/middleware"
 	apimodels "github.com/grepplabs/tribe/api/v1/models"
 	apirealms "github.com/grepplabs/tribe/api/v1/server/restapi/realms"
 	"github.com/grepplabs/tribe/database/client"
 	dtomodels "github.com/grepplabs/tribe/database/models"
-	"github.com/grepplabs/tribe/pkg"
 	"net/http"
 )
 
@@ -22,21 +20,30 @@ type updateRealmHandler struct {
 }
 
 func (h *updateRealmHandler) Handle(input apirealms.UpdateRealmParams) middleware.Responder {
+	exists, err := h.dbClient.RealmManager().ExistsRealm(input.HTTPRequest.Context(), input.RealmID)
+	if err != nil {
+		return h.newInternalError(err)
+	}
+	if !exists {
+		return apirealms.NewUpdateRealmNotFound()
+	}
+
 	realm := &dtomodels.Realm{
 		RealmID:     input.RealmID,
 		Description: input.Realm.Description,
 	}
-	err := h.dbClient.RealmManager().UpdateRealm(input.HTTPRequest.Context(), realm)
+
+	err = h.dbClient.RealmManager().UpdateRealm(input.HTTPRequest.Context(), realm)
 	if err != nil {
-		var notFound pkg.ErrNotFound
-		if errors.As(err, &notFound) {
-			return apirealms.NewUpdateRealmNotFound()
-		}
-		return apirealms.NewUpdateRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
-			Code:    http.StatusInternalServerError,
-			Message: http.StatusText(http.StatusInternalServerError),
-			Detail:  err.Error(),
-		})
+		return h.newInternalError(err)
 	}
 	return apirealms.NewUpdateRealmUpdatedRealm()
+}
+
+func (h *updateRealmHandler) newInternalError(err error) *apirealms.UpdateRealmDefault {
+	return apirealms.NewUpdateRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
+		Code:    http.StatusInternalServerError,
+		Message: http.StatusText(http.StatusInternalServerError),
+		Detail:  err.Error(),
+	})
 }

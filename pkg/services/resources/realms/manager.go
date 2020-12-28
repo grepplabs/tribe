@@ -11,4 +11,5 @@ type Manager interface {
 	DeleteRealm(ctx context.Context, realmID string) error
 	GetRealm(ctx context.Context, realmID string) (*models.Realm, error)
 	ListRealms(ctx context.Context, offset *int64, limit *int64) ([]models.Realm, error)
+	ExistsRealm(ctx context.Context, realmID string) (bool, error)
 }

@@ -30,11 +30,15 @@ func (h *createRealmHandler) Handle(input apirealms.CreateRealmParams) middlewar
 
 	err := h.dbClient.RealmManager().CreateRealm(input.HTTPRequest.Context(), realm)
 	if err != nil {
-		return apirealms.NewCreateRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
-			Code:    http.StatusInternalServerError,
-			Message: http.StatusText(http.StatusInternalServerError),
-			Detail:  err.Error(),
-		})
+		return h.newInternalError(err)
 	}
 	return apirealms.NewCreateRealmCreated()
+}
+
+func (h *createRealmHandler) newInternalError(err error) *apirealms.CreateRealmDefault {
+	return apirealms.NewCreateRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
+		Code:    http.StatusInternalServerError,
+		Message: http.StatusText(http.StatusInternalServerError),
+		Detail:  err.Error(),
+	})
 }

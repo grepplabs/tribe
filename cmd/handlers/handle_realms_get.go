@@ -25,16 +25,20 @@ func (h *getRealmHandler) Handle(input apirealms.GetRealmParams) middleware.Resp
 
 	realm, err := h.dbClient.RealmManager().GetRealm(input.HTTPRequest.Context(), input.RealmID)
 	if err != nil {
-		return apirealms.NewGetRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
-			Code:    http.StatusInternalServerError,
-			Message: http.StatusText(http.StatusInternalServerError),
-			Detail:  err.Error(),
-		})
+		return h.newInternalError(err)
 	}
 	if realm == nil {
 		return apirealms.NewGetRealmNotFound()
 	}
 	return apirealms.NewGetRealmFoundRealm().WithPayload(realmToGetRealmResponse(realm))
+}
+
+func (h *getRealmHandler) newInternalError(err error) *apirealms.GetRealmDefault {
+	return apirealms.NewGetRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
+		Code:    http.StatusInternalServerError,
+		Message: http.StatusText(http.StatusInternalServerError),
+		Detail:  err.Error(),
+	})
 }
 
 func realmToGetRealmResponse(realm *models.Realm) *apimodels.GetRealmResponse {
