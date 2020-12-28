@@ -58,6 +58,9 @@ func NewTribeAPI(spec *loads.Document) *TribeAPI {
 		UsersCreateUserHandler: users.CreateUserHandlerFunc(func(params users.CreateUserParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.CreateUser has not yet been implemented")
 		}),
+		RealmsDeleteRealmHandler: realms.DeleteRealmHandlerFunc(func(params realms.DeleteRealmParams) middleware.Responder {
+			return middleware.NotImplemented("operation realms.DeleteRealm has not yet been implemented")
+		}),
 		RealmsGetRealmHandler: realms.GetRealmHandlerFunc(func(params realms.GetRealmParams) middleware.Responder {
 			return middleware.NotImplemented("operation realms.GetRealm has not yet been implemented")
 		}),
@@ -69,6 +72,9 @@ func NewTribeAPI(spec *loads.Document) *TribeAPI {
 		}),
 		UsersListUsersHandler: users.ListUsersHandlerFunc(func(params users.ListUsersParams) middleware.Responder {
 			return middleware.NotImplemented("operation users.ListUsers has not yet been implemented")
+		}),
+		RealmsUpdateRealmHandler: realms.UpdateRealmHandlerFunc(func(params realms.UpdateRealmParams) middleware.Responder {
+			return middleware.NotImplemented("operation realms.UpdateRealm has not yet been implemented")
 		}),
 	}
 }
@@ -112,6 +118,8 @@ type TribeAPI struct {
 	RealmsCreateRealmHandler realms.CreateRealmHandler
 	// UsersCreateUserHandler sets the operation handler for the create user operation
 	UsersCreateUserHandler users.CreateUserHandler
+	// RealmsDeleteRealmHandler sets the operation handler for the delete realm operation
+	RealmsDeleteRealmHandler realms.DeleteRealmHandler
 	// RealmsGetRealmHandler sets the operation handler for the get realm operation
 	RealmsGetRealmHandler realms.GetRealmHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
@@ -120,6 +128,8 @@ type TribeAPI struct {
 	RealmsListRealmsHandler realms.ListRealmsHandler
 	// UsersListUsersHandler sets the operation handler for the list users operation
 	UsersListUsersHandler users.ListUsersHandler
+	// RealmsUpdateRealmHandler sets the operation handler for the update realm operation
+	RealmsUpdateRealmHandler realms.UpdateRealmHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -208,6 +218,9 @@ func (o *TribeAPI) Validate() error {
 	if o.UsersCreateUserHandler == nil {
 		unregistered = append(unregistered, "users.CreateUserHandler")
 	}
+	if o.RealmsDeleteRealmHandler == nil {
+		unregistered = append(unregistered, "realms.DeleteRealmHandler")
+	}
 	if o.RealmsGetRealmHandler == nil {
 		unregistered = append(unregistered, "realms.GetRealmHandler")
 	}
@@ -219,6 +232,9 @@ func (o *TribeAPI) Validate() error {
 	}
 	if o.UsersListUsersHandler == nil {
 		unregistered = append(unregistered, "users.ListUsersHandler")
+	}
+	if o.RealmsUpdateRealmHandler == nil {
+		unregistered = append(unregistered, "realms.UpdateRealmHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -324,6 +340,10 @@ func (o *TribeAPI) initHandlerCache() {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/realms/{realm_id}/users"] = users.NewCreateUser(o.context, o.UsersCreateUserHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/realms/{realm_id}"] = realms.NewDeleteRealm(o.context, o.RealmsDeleteRealmHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
@@ -340,6 +360,10 @@ func (o *TribeAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/realms/{realm_id}/users"] = users.NewListUsers(o.context, o.UsersListUsersHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/realms/{realm_id}"] = realms.NewUpdateRealm(o.context, o.RealmsUpdateRealmHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

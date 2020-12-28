@@ -4,7 +4,7 @@ import "time"
 
 type Realm struct {
 	RealmID     string    `db:"realm_id"`
-	CreatedAt   time.Time `db:"created_at"`
+	CreatedAt   time.Time `db:"created_at,omitempty"`
 	Description string    `db:"description"`
 }
 

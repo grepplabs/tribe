@@ -133,7 +133,7 @@ func init() {
         "tags": [
           "realms"
         ],
-        "summary": "Create a new realm",
+        "summary": "Create new realm",
         "operationId": "create-realm",
         "parameters": [
           {
@@ -189,6 +189,92 @@ func init() {
               "$ref": "#/definitions/GetRealmResponse"
             },
             "x-go-name": "FoundRealm"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "Update realm",
+        "operationId": "update-realm",
+        "parameters": [
+          {
+            "$ref": "#/parameters/realm_id"
+          },
+          {
+            "name": "realm",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateRealmRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "updated",
+            "schema": {
+              "$ref": "#/definitions/GetRealmResponse"
+            },
+            "x-go-name": "UpdatedRealm"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "Delete realm",
+        "operationId": "delete-realm",
+        "parameters": [
+          {
+            "$ref": "#/parameters/realm_id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted",
+            "schema": {
+              "$ref": "#/definitions/GetRealmResponse"
+            },
+            "x-go-name": "DeletedRealm"
           },
           "400": {
             "$ref": "#/responses/BadRequest"
@@ -275,7 +361,7 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Create a new user",
+        "summary": "Create new user",
         "operationId": "create-user",
         "parameters": [
           {
@@ -563,6 +649,23 @@ func init() {
           "example": "/problem/connection-error"
         }
       }
+    },
+    "UpdateRealmRequest": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "Te realm description.",
+          "type": "string",
+          "maxLength": 255
+        },
+        "realm_metadata": {
+          "description": "Additional data related to the realm",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "parameters": {
@@ -803,7 +906,7 @@ func init() {
         "tags": [
           "realms"
         ],
-        "summary": "Create a new realm",
+        "summary": "Create new realm",
         "operationId": "create-realm",
         "parameters": [
           {
@@ -888,6 +991,148 @@ func init() {
               "$ref": "#/definitions/GetRealmResponse"
             },
             "x-go-name": "FoundRealm"
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "404": {
+            "description": "Not found.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "NotFound"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "Update realm",
+        "operationId": "update-realm",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Realm id.",
+            "name": "realm_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "name": "realm",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/UpdateRealmRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "updated",
+            "schema": {
+              "$ref": "#/definitions/GetRealmResponse"
+            },
+            "x-go-name": "UpdatedRealm"
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "404": {
+            "description": "Not found.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "NotFound"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "realms"
+        ],
+        "summary": "Delete realm",
+        "operationId": "delete-realm",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Realm id.",
+            "name": "realm_id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "deleted",
+            "schema": {
+              "$ref": "#/definitions/GetRealmResponse"
+            },
+            "x-go-name": "DeletedRealm"
           },
           "400": {
             "description": "Invalid request body.",
@@ -1033,7 +1278,7 @@ func init() {
         "tags": [
           "users"
         ],
-        "summary": "Create a new user",
+        "summary": "Create new user",
         "operationId": "create-user",
         "parameters": [
           {
@@ -1379,6 +1624,23 @@ func init() {
           "format": "uri-reference",
           "default": "about:blank",
           "example": "/problem/connection-error"
+        }
+      }
+    },
+    "UpdateRealmRequest": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "description": "Te realm description.",
+          "type": "string",
+          "maxLength": 255
+        },
+        "realm_metadata": {
+          "description": "Additional data related to the realm",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         }
       }
     }

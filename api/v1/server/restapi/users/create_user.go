@@ -31,7 +31,7 @@ func NewCreateUser(ctx *middleware.Context, handler CreateUserHandler) *CreateUs
 
 /*CreateUser swagger:route POST /realms/{realm_id}/users users createUser
 
-Create a new user
+Create new user
 
 */
 type CreateUser struct {

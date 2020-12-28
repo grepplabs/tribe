@@ -2,6 +2,7 @@ package realms
 
 import (
 	"context"
+	"fmt"
 	"github.com/grepplabs/tribe/database/models"
 	"github.com/grepplabs/tribe/pkg"
 	"github.com/pkg/errors"
@@ -68,4 +69,36 @@ func (m sqlManager) ListRealms(ctx context.Context, offset *int64, limit *int64)
 		return nil, errors.Wrap(err, "list realms")
 	}
 	return realms, nil
+}
+
+func (m sqlManager) UpdateRealm(ctx context.Context, realm *models.Realm) error {
+	if realm == nil {
+		return pkg.ErrIllegalArgument{Reason: "Input parameter realm is missing"}
+	}
+	exists, err := m.DBS.WithContext(ctx).Collection(realm.TableName()).Find(db.Cond{"realm_id": realm.RealmID}).Exists()
+	if err != nil {
+		return errors.Wrap(err, "exists realm")
+	}
+	if !exists {
+		return pkg.ErrNotFound{Reason: fmt.Sprintf("realm '%s' not found", realm.RealmID)}
+	}
+	err = m.DBS.WithContext(ctx).Collection(realm.TableName()).Find(db.Cond{"realm_id": realm.RealmID}).Update(realm)
+	return errors.Wrap(err, "update realm")
+}
+
+func (m sqlManager) DeleteRealm(ctx context.Context, realmID string) error {
+	if realmID == "" {
+		return pkg.ErrIllegalArgument{Reason: "Input parameter realmID is missing"}
+	}
+
+	var realm models.Realm
+	exists, err := m.DBS.WithContext(ctx).Collection(realm.TableName()).Find(db.Cond{"realm_id": realmID}).Exists()
+	if err != nil {
+		return errors.Wrap(err, "exists realm")
+	}
+	if !exists {
+		return pkg.ErrNotFound{Reason: fmt.Sprintf("realm '%s' not found", realmID)}
+	}
+	err = m.DBS.WithContext(ctx).Collection(realm.TableName()).Find(db.Cond{"realm_id": realmID}).Delete()
+	return errors.Wrap(err, "delete realm")
 }

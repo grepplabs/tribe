@@ -15,7 +15,7 @@ paths:
       tags:
         - realms
       operationId: create-realm
-      summary: Create a new realm
+      summary: Create new realm
       parameters:
         - name: realm
           in: body
@@ -106,13 +106,69 @@ paths:
           "$ref": "#/responses/TooManyRequests"
         default:
           "$ref": "#/responses/Unexpected"
+    put:
+      tags:
+        - realms
+      operationId: update-realm
+      summary: Update realm
+      parameters:
+        - "$ref": "#/parameters/realm_id"
+        - name: realm
+          in: body
+          required: true
+          schema:
+            "$ref": "#/definitions/UpdateRealmRequest"
+      responses:
+        200:
+          description: updated
+          x-go-name: UpdatedRealm
+          schema:
+            "$ref": "#/definitions/GetRealmResponse"
+        400:
+          "$ref": "#/responses/BadRequest"
+        401:
+          "$ref": "#/responses/Unauthorized"
+        403:
+          "$ref": "#/responses/Forbidden"
+        404:
+          "$ref": "#/responses/NotFound"
+        429:
+          "$ref": "#/responses/TooManyRequests"
+        default:
+          "$ref": "#/responses/Unexpected"
+    delete:
+      tags:
+        - realms
+      operationId: delete-realm
+      summary: Delete realm
+      parameters:
+        - "$ref": "#/parameters/realm_id"
+      responses:
+        200:
+          description: deleted
+          x-go-name: DeletedRealm
+          schema:
+            "$ref": "#/definitions/GetRealmResponse"
+        400:
+          "$ref": "#/responses/BadRequest"
+        401:
+          "$ref": "#/responses/Unauthorized"
+        403:
+          "$ref": "#/responses/Forbidden"
+        404:
+          "$ref": "#/responses/NotFound"
+        429:
+          "$ref": "#/responses/TooManyRequests"
+        default:
+          "$ref": "#/responses/Unexpected"
+
 
   "/realms/{realm_id}/users":
     post:
       tags:
         - users
       operationId: create-user
-      summary: Create a new user
+      summary: Create new user
       parameters:
         - "$ref": "#/parameters/realm_id"
         - name: user
@@ -367,6 +423,18 @@ definitions:
         minLength: 1
         maxLength: 64
         pattern: '^[a-zA-Z0-9_-]*$'
+      description:
+        type: string
+        description: Te realm description.
+        maxLength: 255
+      realm_metadata:
+        type: object
+        description: Additional data related to the realm
+        additionalProperties:
+          type: string
+  UpdateRealmRequest:
+    type: object
+    properties:
       description:
         type: string
         description: Te realm description.

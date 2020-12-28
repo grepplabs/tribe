@@ -31,7 +31,7 @@ func NewCreateRealm(ctx *middleware.Context, handler CreateRealmHandler) *Create
 
 /*CreateRealm swagger:route POST /realms realms createRealm
 
-Create a new realm
+Create new realm
 
 */
 type CreateRealm struct {

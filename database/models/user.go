@@ -4,7 +4,7 @@ import "time"
 
 type User struct {
 	UserID            string    `db:"user_id"`
-	CreatedAt         time.Time `db:"created_at"`
+	CreatedAt         time.Time `db:"created_at,omitempty"`
 	RealmID           string    `db:"realm_id"`
 	Username          string    `db:"username"`
 	EncryptedPassword string    `db:"encrypted_password"`

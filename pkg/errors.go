@@ -9,3 +9,11 @@ type ErrIllegalArgument struct {
 func (e ErrIllegalArgument) Error() string {
 	return fmt.Sprintf("Illegal argument: %q", e.Reason)
 }
+
+type ErrNotFound struct {
+	Reason string
+}
+
+func (e ErrNotFound) Error() string {
+	return fmt.Sprintf("Not found: %q", e.Reason)
+}
