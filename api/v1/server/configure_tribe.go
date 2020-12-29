@@ -5,6 +5,8 @@ package server
 import (
 	"context"
 	"crypto/tls"
+	"github.com/grepplabs/tribe/config"
+	"github.com/rs/cors"
 	"net"
 	"net/http"
 	"os"
@@ -14,12 +16,17 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/gorilla/handlers"
-
 	"github.com/grepplabs/tribe/api/v1/server/restapi"
 	"github.com/grepplabs/tribe/api/v1/server/restapi/healthz"
 )
 
 //go:generate swagger generate server --target ../../v1 --name Tribe --spec ../openapi.yaml --api-package restapi --server-package server --principal interface{} --exclude-main
+
+var (
+	// ServerCtx and ServerCancel
+	ServerCtx, serverCancel = context.WithCancel(context.Background())
+	CorsConfig              = new(config.CorsConfig)
+)
 
 func configureFlags(api *restapi.TribeAPI) {
 	// api.CommandLineOptionsGroups = []swag.CommandLineOptionsGroup{ ... }
@@ -69,11 +76,6 @@ func configureTLS(tlsConfig *tls.Config) {
 	// Make all necessary changes to the TLS configuration here.
 }
 
-var (
-	// ServerCtx and ServerCancel
-	ServerCtx, serverCancel = context.WithCancel(context.Background())
-)
-
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
@@ -93,7 +95,10 @@ func setupMiddlewares(handler http.Handler) http.Handler {
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
 // So this is a good place to plug in a panic handling middleware, logging and metrics
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
-
+	if CorsConfig.Enabled {
+		handler = cors.New(CorsConfig.Options).Handler(handler)
+	}
 	//TODO: see also https://github.com/didip/tollbooth
-	return handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(handlers.LoggingHandler(os.Stdout, handler))
+	handler = handlers.LoggingHandler(os.Stdout, handler)
+	return handlers.RecoveryHandler(handlers.PrintRecoveryStack(true))(handler)
 }

@@ -25,7 +25,7 @@ func initServerFlags(cmd *cobra.Command, sc *config.ServerConfig) {
 	cmd.Flags().StringSliceVar(&sc.EnabledListeners, "server-scheme", []string{"http"}, "the listeners to enable, this can be repeated and defaults to the schemes in the swagger spec")
 	cmd.Flags().DurationVar(&sc.CleanupTimeout, "server-cleanup-timeout", 10*time.Second, "grace period for which to wait before killing idle connections")
 	cmd.Flags().DurationVar(&sc.GracefulTimeout, "server-graceful-timeout", 15*time.Second, "grace period for which to wait before shutting down the server")
-	cmd.Flags().IntVar(&sc.MaxHeaderSize, "server-max-header-size", 1048576, "controls the maximum number of bytes the server will read parsing the request header'sc keys and values, including the request line. It does not limit the size of the request body.")
+	cmd.Flags().IntVar(&sc.MaxHeaderSize, "server-max-header-size", 1048576, "controls the maximum number of bytes the server will read parsing the request header'sc keys and values, including the request line. It does not limit the size of the request body")
 
 	cmd.Flags().StringVar(&sc.Host, "server-host", "localhost", "the IP to listen on")
 	cmd.Flags().IntVar(&sc.Port, "server-port", 0, "the port to listen on for insecure connections, defaults to a random value")

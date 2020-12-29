@@ -30,6 +30,7 @@ var (
 func init() {
 	serveCmd.AddCommand(serveAdminCmd)
 	initServerFlags(serveAdminCmd, serverConfig)
+	initCorsFlags(serveAdminCmd, server.CorsConfig)
 
 	serveAdminCmd.Flags().StringVar(&dbConfig.ConnectionURL, "db-connection-url", "postgresql://tribe:secret@localhost:5432/tribe?sslmode=disable", "data source name as connection URI e.g. postgresql://user:password@localhost:5432/dbname?sslmode=disable")
 	serveAdminCmd.Flags().IntVar(&dbConfig.MaxIdleConns, "db-max-idle-conns", 2, "The maximum number of connections in the idle connection pool")
