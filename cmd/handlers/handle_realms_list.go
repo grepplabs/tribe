@@ -19,7 +19,7 @@ type listRealmsHandler struct {
 }
 
 func (h *listRealmsHandler) Handle(input apirealms.ListRealmsParams) middleware.Responder {
-	users, err := h.dbClient.RealmManager().ListRealms(input.HTTPRequest.Context(), input.Offset, input.Limit)
+	realmList, err := h.dbClient.RealmManager().ListRealms(input.HTTPRequest.Context(), input.Offset, input.Limit)
 	if err != nil {
 		return apirealms.NewGetRealmDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
 			Code:    http.StatusInternalServerError,
@@ -27,9 +27,9 @@ func (h *listRealmsHandler) Handle(input apirealms.ListRealmsParams) middleware.
 			Detail:  err.Error(),
 		})
 	}
-	results := make([]*apimodels.GetRealmResponse, len(users))
-	for i := 0; i < len(users); i++ {
-		results[i] = realmToGetRealmResponse(&users[i])
+	results := make([]*apimodels.GetRealmResponse, len(realmList.Realms))
+	for i := 0; i < len(realmList.Realms); i++ {
+		results[i] = realmToGetRealmResponse(&realmList.Realms[i])
 	}
 	payload := &apirealms.ListRealmsFoundRealmsBody{
 		Results: results,
@@ -37,6 +37,7 @@ func (h *listRealmsHandler) Handle(input apirealms.ListRealmsParams) middleware.
 			Prev: prevToken(input.Offset, input.Limit),
 			Next: nextToken(input.Offset, input.Limit, len(results)),
 		},
+		Total: int64(realmList.Page.Total),
 	}
 	return apirealms.NewListRealmsFoundRealms().WithPayload(payload)
 }

@@ -70,7 +70,7 @@ func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64
 		return nil, errors.Wrap(err, "list users")
 	}
 
-	// entries, err := result.TotalEntries() # this executes additional query
+	// entries, err := result.Total() # this executes additional query
 
 	return users, nil
 }

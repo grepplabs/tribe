@@ -43,8 +43,7 @@ func (m sqlManager) GetRealm(ctx context.Context, realmID string) (*models.Realm
 	}
 	return &realm, nil
 }
-
-func (m sqlManager) ListRealms(ctx context.Context, offset *int64, limit *int64) ([]models.Realm, error) {
+func (m sqlManager) ListRealms(ctx context.Context, offset *int64, limit *int64) (*models.RealmList, error) {
 	if limit != nil && int(*limit) < 0 {
 		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter limit must not be negative"}
 	}
@@ -67,7 +66,16 @@ func (m sqlManager) ListRealms(ctx context.Context, offset *int64, limit *int64)
 		}
 		return nil, errors.Wrap(err, "list realms")
 	}
-	return realms, nil
+	// this executes additional query
+	total, err := result.TotalEntries()
+	if err != nil {
+		return nil, errors.Wrap(err, "list realms total entries")
+	}
+	return &models.RealmList{Realms: realms, Page: models.Page{
+		Offset: offset,
+		Limit:  offset,
+		Total:  total,
+	}}, nil
 }
 
 func (m sqlManager) ExistsRealm(ctx context.Context, realmID string) (bool, error) {

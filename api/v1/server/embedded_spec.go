@@ -104,6 +104,10 @@ func init() {
                   "items": {
                     "$ref": "#/definitions/GetRealmResponse"
                   }
+                },
+                "total": {
+                  "description": "Total number of entries",
+                  "type": "integer"
                 }
               }
             },
@@ -853,6 +857,10 @@ func init() {
                   "items": {
                     "$ref": "#/definitions/GetRealmResponse"
                   }
+                },
+                "total": {
+                  "description": "Total number of entries",
+                  "type": "integer"
                 }
               }
             },

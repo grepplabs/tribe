@@ -5,11 +5,12 @@ package server
 import (
 	"context"
 	"crypto/tls"
-	"github.com/grepplabs/tribe/config"
-	"github.com/rs/cors"
 	"net"
 	"net/http"
 	"os"
+
+	"github.com/grepplabs/tribe/config"
+	"github.com/rs/cors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"

@@ -59,6 +59,10 @@ paths:
               "_links": {
                 "$ref": "#/definitions/Links"
               },
+              "total": {
+                type: integer,
+                description: "Total number of entries"
+              },
               "results": {
                 "type": "array",
                 "items": {

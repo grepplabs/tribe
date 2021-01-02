@@ -75,6 +75,9 @@ type ListRealmsFoundRealmsBody struct {
 	// results
 	// Required: true
 	Results []*models.GetRealmResponse `json:"results"`
+
+	// Total number of entries
+	Total int64 `json:"total,omitempty"`
 }
 
 // Validate validates this list realms found realms body
