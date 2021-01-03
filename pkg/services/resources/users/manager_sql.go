@@ -43,7 +43,7 @@ func (m sqlManager) GetUser(ctx context.Context, realmID string, username string
 	return &user, nil
 }
 
-func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64, limit *int64) ([]models.User, error) {
+func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64, limit *int64) (*models.UserList, error) {
 	if realmID == "" {
 		return nil, pkg.ErrIllegalArgument{Reason: "Input parameter realmID must not be empty"}
 	}
@@ -69,8 +69,15 @@ func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64
 		}
 		return nil, errors.Wrap(err, "list users")
 	}
+	// this executes additional query
+	total, err := result.TotalEntries()
+	if err != nil {
+		return nil, errors.Wrap(err, "list users total entries")
+	}
 
-	// entries, err := result.Total() # this executes additional query
-
-	return users, nil
+	return &models.UserList{Users: users, Page: models.Page{
+		Offset: offset,
+		Limit:  offset,
+		Total:  total,
+	}}, nil
 }

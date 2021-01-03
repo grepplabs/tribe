@@ -5,6 +5,7 @@ import (
 	apimodels "github.com/grepplabs/tribe/api/v1/models"
 	apiusers "github.com/grepplabs/tribe/api/v1/server/restapi/users"
 	"github.com/grepplabs/tribe/database/client"
+	"github.com/grepplabs/tribe/pkg"
 	"net/http"
 )
 
@@ -19,7 +20,7 @@ type listUsersHandler struct {
 }
 
 func (h *listUsersHandler) Handle(input apiusers.ListUsersParams) middleware.Responder {
-	users, err := h.dbClient.UserManager().ListUsers(input.HTTPRequest.Context(), input.RealmID, input.Offset, input.Limit)
+	userList, err := h.dbClient.UserManager().ListUsers(input.HTTPRequest.Context(), input.RealmID, input.Offset, input.Limit)
 	if err != nil {
 		return apiusers.NewGetUserDefault(http.StatusInternalServerError).WithPayload(&apimodels.Problem{
 			Code:    http.StatusInternalServerError,
@@ -27,17 +28,17 @@ func (h *listUsersHandler) Handle(input apiusers.ListUsersParams) middleware.Res
 			Detail:  err.Error(),
 		})
 	}
-	results := make([]*apimodels.GetUserResponse, len(users))
-	for i := 0; i < len(users); i++ {
-		results[i] = userToGetUserResponse(&users[i])
+	results := make([]*apimodels.GetUserResponse, len(userList.Users))
+	for i := 0; i < len(userList.Users); i++ {
+		results[i] = userToGetUserResponse(&userList.Users[i])
 	}
-
 	payload := &apiusers.ListUsersFoundUsersBody{
 		Results: results,
 		Links: &apimodels.Links{
 			Prev: prevToken(input.Offset, input.Limit),
 			Next: nextToken(input.Offset, input.Limit, len(results)),
 		},
+		Total: pkg.Int64(int64(userList.Page.Total)),
 	}
 	return apiusers.NewListUsersFoundUsers().WithPayload(payload)
 }

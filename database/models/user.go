@@ -16,3 +16,8 @@ type User struct {
 func (User) TableName() string {
 	return "tribe_user"
 }
+
+type UserList struct {
+	Users []User
+	Page  Page
+}

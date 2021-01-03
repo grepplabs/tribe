@@ -93,7 +93,8 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "results"
+                "results",
+                "total"
               ],
               "properties": {
                 "_links": {
@@ -325,7 +326,8 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "results"
+                "results",
+                "total"
               ],
               "properties": {
                 "_links": {
@@ -336,6 +338,10 @@ func init() {
                   "items": {
                     "$ref": "#/definitions/GetUserResponse"
                   }
+                },
+                "total": {
+                  "description": "Total number of entries",
+                  "type": "integer"
                 }
               }
             },
@@ -846,7 +852,8 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "results"
+                "results",
+                "total"
               ],
               "properties": {
                 "_links": {
@@ -1222,7 +1229,8 @@ func init() {
             "schema": {
               "type": "object",
               "required": [
-                "results"
+                "results",
+                "total"
               ],
               "properties": {
                 "_links": {
@@ -1233,6 +1241,10 @@ func init() {
                   "items": {
                     "$ref": "#/definitions/GetUserResponse"
                   }
+                },
+                "total": {
+                  "description": "Total number of entries",
+                  "type": "integer"
                 }
               }
             },

@@ -53,7 +53,8 @@ paths:
           schema: {
             "type": "object",
             "required": [
-                "results"
+                "results",
+                "total"
             ],
             "properties": {
               "_links": {
@@ -214,11 +215,16 @@ paths:
           schema: {
             "type": "object",
             "required": [
-                "results"
+                "results",
+                "total",
             ],
             "properties": {
               "_links": {
                 "$ref": "#/definitions/Links"
+              },
+              "total": {
+                type: integer,
+                description: "Total number of entries"
               },
               "results": {
                 "type": "array",

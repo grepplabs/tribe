@@ -10,17 +10,11 @@ type Realm struct {
 	Description string    `db:"description"`
 }
 
+func (Realm) TableName() string {
+	return "tribe_realm"
+}
+
 type RealmList struct {
 	Realms []Realm
 	Page   Page
-}
-
-type Page struct {
-	Offset *int64
-	Limit  *int64
-	Total  uint64
-}
-
-func (Realm) TableName() string {
-	return "tribe_realm"
 }

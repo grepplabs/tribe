@@ -77,7 +77,8 @@ type ListRealmsFoundRealmsBody struct {
 	Results []*models.GetRealmResponse `json:"results"`
 
 	// Total number of entries
-	Total int64 `json:"total,omitempty"`
+	// Required: true
+	Total *int64 `json:"total"`
 }
 
 // Validate validates this list realms found realms body
@@ -89,6 +90,10 @@ func (o *ListRealmsFoundRealmsBody) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := o.validateResults(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotal(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -136,6 +141,15 @@ func (o *ListRealmsFoundRealmsBody) validateResults(formats strfmt.Registry) err
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (o *ListRealmsFoundRealmsBody) validateTotal(formats strfmt.Registry) error {
+
+	if err := validate.Required("listRealmsFoundRealms"+"."+"total", "body", o.Total); err != nil {
+		return err
 	}
 
 	return nil

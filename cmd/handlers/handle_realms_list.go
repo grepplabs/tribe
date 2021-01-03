@@ -5,6 +5,7 @@ import (
 	apimodels "github.com/grepplabs/tribe/api/v1/models"
 	apirealms "github.com/grepplabs/tribe/api/v1/server/restapi/realms"
 	"github.com/grepplabs/tribe/database/client"
+	"github.com/grepplabs/tribe/pkg"
 	"net/http"
 )
 
@@ -37,7 +38,7 @@ func (h *listRealmsHandler) Handle(input apirealms.ListRealmsParams) middleware.
 			Prev: prevToken(input.Offset, input.Limit),
 			Next: nextToken(input.Offset, input.Limit, len(results)),
 		},
-		Total: int64(realmList.Page.Total),
+		Total: pkg.Int64(int64(realmList.Page.Total)),
 	}
 	return apirealms.NewListRealmsFoundRealms().WithPayload(payload)
 }

@@ -75,6 +75,10 @@ type ListUsersFoundUsersBody struct {
 	// results
 	// Required: true
 	Results []*models.GetUserResponse `json:"results"`
+
+	// Total number of entries
+	// Required: true
+	Total *int64 `json:"total"`
 }
 
 // Validate validates this list users found users body
@@ -86,6 +90,10 @@ func (o *ListUsersFoundUsersBody) Validate(formats strfmt.Registry) error {
 	}
 
 	if err := o.validateResults(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.validateTotal(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -133,6 +141,15 @@ func (o *ListUsersFoundUsersBody) validateResults(formats strfmt.Registry) error
 			}
 		}
 
+	}
+
+	return nil
+}
+
+func (o *ListUsersFoundUsersBody) validateTotal(formats strfmt.Registry) error {
+
+	if err := validate.Required("listUsersFoundUsers"+"."+"total", "body", o.Total); err != nil {
+		return err
 	}
 
 	return nil
