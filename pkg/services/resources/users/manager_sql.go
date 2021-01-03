@@ -99,3 +99,11 @@ func (m sqlManager) DeleteUser(ctx context.Context, realmID string, username str
 	err := m.DBS.WithContext(ctx).Collection(user.TableName()).Find(db.Cond{"realm_id": realmID, "username": username}).Delete()
 	return errors.Wrap(err, "delete user")
 }
+
+func (m sqlManager) UpdateUser(ctx context.Context, user *models.User) error {
+	if user == nil {
+		return pkg.ErrIllegalArgument{Reason: "Input parameter user is missing"}
+	}
+	err := m.DBS.WithContext(ctx).Collection(user.TableName()).Find(db.Cond{"realm_id": user.RealmID, "username": user.Username}).Update(user)
+	return errors.Wrap(err, "update user")
+}

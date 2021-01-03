@@ -79,6 +79,9 @@ func NewTribeAPI(spec *loads.Document) *TribeAPI {
 		RealmsUpdateRealmHandler: realms.UpdateRealmHandlerFunc(func(params realms.UpdateRealmParams) middleware.Responder {
 			return middleware.NotImplemented("operation realms.UpdateRealm has not yet been implemented")
 		}),
+		UsersUpdateUserHandler: users.UpdateUserHandlerFunc(func(params users.UpdateUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation users.UpdateUser has not yet been implemented")
+		}),
 	}
 }
 
@@ -135,6 +138,8 @@ type TribeAPI struct {
 	UsersListUsersHandler users.ListUsersHandler
 	// RealmsUpdateRealmHandler sets the operation handler for the update realm operation
 	RealmsUpdateRealmHandler realms.UpdateRealmHandler
+	// UsersUpdateUserHandler sets the operation handler for the update user operation
+	UsersUpdateUserHandler users.UpdateUserHandler
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
 	ServeError func(http.ResponseWriter, *http.Request, error)
@@ -243,6 +248,9 @@ func (o *TribeAPI) Validate() error {
 	}
 	if o.RealmsUpdateRealmHandler == nil {
 		unregistered = append(unregistered, "realms.UpdateRealmHandler")
+	}
+	if o.UsersUpdateUserHandler == nil {
+		unregistered = append(unregistered, "users.UpdateUserHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -376,6 +384,10 @@ func (o *TribeAPI) initHandlerCache() {
 		o.handlers["PUT"] = make(map[string]http.Handler)
 	}
 	o.handlers["PUT"]["/realms/{realm_id}"] = realms.NewUpdateRealm(o.context, o.RealmsUpdateRealmHandler)
+	if o.handlers["PUT"] == nil {
+		o.handlers["PUT"] = make(map[string]http.Handler)
+	}
+	o.handlers["PUT"]["/realms/{realm_id}/users/{username}"] = users.NewUpdateUser(o.context, o.UsersUpdateUserHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

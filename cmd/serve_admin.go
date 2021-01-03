@@ -114,6 +114,7 @@ func (s *AdminServer) instantiateAPI() *restapi.TribeAPI {
 	api.UsersGetUserHandler = handlers.NewGetUserHandler(s.dbClient)
 	api.UsersCreateUserHandler = handlers.NewCreateUserHandler(s.dbClient, passwordBCryptCost)
 	api.UsersListUsersHandler = handlers.NewListUsersHandler(s.dbClient)
+	api.UsersUpdateUserHandler = handlers.NewUpdateUserHandler(s.dbClient, passwordBCryptCost)
 	api.UsersDeleteUserHandler = handlers.NewDeleteUserHandler(s.dbClient)
 
 	return api
