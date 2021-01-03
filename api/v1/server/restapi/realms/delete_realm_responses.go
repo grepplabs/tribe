@@ -13,48 +13,28 @@ import (
 	"github.com/grepplabs/tribe/api/v1/models"
 )
 
-// DeleteRealmDeletedRealmCode is the HTTP code returned for type DeleteRealmDeletedRealm
-const DeleteRealmDeletedRealmCode int = 200
+// DeleteRealmOKCode is the HTTP code returned for type DeleteRealmOK
+const DeleteRealmOKCode int = 200
 
-/*DeleteRealmDeletedRealm deleted
+/*DeleteRealmOK Successfully created.
 
-swagger:response deleteRealmDeletedRealm
+swagger:response deleteRealmOK
 */
-type DeleteRealmDeletedRealm struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.GetRealmResponse `json:"body,omitempty"`
+type DeleteRealmOK struct {
 }
 
-// NewDeleteRealmDeletedRealm creates DeleteRealmDeletedRealm with default headers values
-func NewDeleteRealmDeletedRealm() *DeleteRealmDeletedRealm {
+// NewDeleteRealmOK creates DeleteRealmOK with default headers values
+func NewDeleteRealmOK() *DeleteRealmOK {
 
-	return &DeleteRealmDeletedRealm{}
-}
-
-// WithPayload adds the payload to the delete realm deleted realm response
-func (o *DeleteRealmDeletedRealm) WithPayload(payload *models.GetRealmResponse) *DeleteRealmDeletedRealm {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the delete realm deleted realm response
-func (o *DeleteRealmDeletedRealm) SetPayload(payload *models.GetRealmResponse) {
-	o.Payload = payload
+	return &DeleteRealmOK{}
 }
 
 // WriteResponse to the client
-func (o *DeleteRealmDeletedRealm) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *DeleteRealmOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
 	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
 }
 
 // DeleteRealmBadRequestCode is the HTTP code returned for type DeleteRealmBadRequest

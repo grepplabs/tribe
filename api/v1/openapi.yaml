@@ -125,10 +125,7 @@ paths:
             "$ref": "#/definitions/UpdateRealmRequest"
       responses:
         200:
-          description: updated
-          x-go-name: UpdatedRealm
-          schema:
-            "$ref": "#/definitions/GetRealmResponse"
+          "$ref": "#/responses/OK"
         400:
           "$ref": "#/responses/BadRequest"
         401:
@@ -150,10 +147,7 @@ paths:
         - "$ref": "#/parameters/realm_id"
       responses:
         200:
-          description: deleted
-          x-go-name: DeletedRealm
-          schema:
-            "$ref": "#/definitions/GetRealmResponse"
+          "$ref": "#/responses/OK"
         400:
           "$ref": "#/responses/BadRequest"
         401:
@@ -274,6 +268,31 @@ paths:
           "$ref": "#/responses/TooManyRequests"
         default:
           "$ref": "#/responses/Unexpected"
+    delete:
+      tags:
+        - users
+      operationId: delete-user
+      summary: Delete user
+      parameters:
+        - "$ref": "#/parameters/realm_id"
+        - "$ref": "#/parameters/username"
+      responses:
+        200:
+          "$ref": "#/responses/OK"
+        400:
+          "$ref": "#/responses/BadRequest"
+        401:
+          "$ref": "#/responses/Unauthorized"
+        403:
+          "$ref": "#/responses/Forbidden"
+        404:
+          "$ref": "#/responses/NotFound"
+        429:
+          "$ref": "#/responses/TooManyRequests"
+        default:
+          "$ref": "#/responses/Unexpected"
+
+
 
   "/-/healthy":
     get:
@@ -334,6 +353,9 @@ parameters:
     type: string
 
 responses:
+  OK:
+    description: Successfully created.
+    x-go-name: OK
   Created:
     description: Successfully created.
     x-go-name: Created

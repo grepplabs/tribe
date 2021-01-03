@@ -81,3 +81,21 @@ func (m sqlManager) ListUsers(ctx context.Context, realmID string, offset *int64
 		Total:  total,
 	}}, nil
 }
+
+func (m sqlManager) ExistsUser(ctx context.Context, realmID string, username string) (bool, error) {
+	if realmID == "" || username == "" {
+		return false, pkg.ErrIllegalArgument{Reason: "Input parameters realmID and username must not be empty"}
+	}
+	var user models.User
+	exists, err := m.DBS.WithContext(ctx).Collection(user.TableName()).Find(db.Cond{"realm_id": realmID, "username": username}).Exists()
+	return exists, errors.Wrap(err, "exists user")
+}
+
+func (m sqlManager) DeleteUser(ctx context.Context, realmID string, username string) error {
+	if realmID == "" || username == "" {
+		return pkg.ErrIllegalArgument{Reason: "Input parameters realmID and username must not be empty"}
+	}
+	var user models.User
+	err := m.DBS.WithContext(ctx).Collection(user.TableName()).Find(db.Cond{"realm_id": realmID, "username": username}).Delete()
+	return errors.Wrap(err, "delete user")
+}

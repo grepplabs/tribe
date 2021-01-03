@@ -61,6 +61,9 @@ func NewTribeAPI(spec *loads.Document) *TribeAPI {
 		RealmsDeleteRealmHandler: realms.DeleteRealmHandlerFunc(func(params realms.DeleteRealmParams) middleware.Responder {
 			return middleware.NotImplemented("operation realms.DeleteRealm has not yet been implemented")
 		}),
+		UsersDeleteUserHandler: users.DeleteUserHandlerFunc(func(params users.DeleteUserParams) middleware.Responder {
+			return middleware.NotImplemented("operation users.DeleteUser has not yet been implemented")
+		}),
 		RealmsGetRealmHandler: realms.GetRealmHandlerFunc(func(params realms.GetRealmParams) middleware.Responder {
 			return middleware.NotImplemented("operation realms.GetRealm has not yet been implemented")
 		}),
@@ -120,6 +123,8 @@ type TribeAPI struct {
 	UsersCreateUserHandler users.CreateUserHandler
 	// RealmsDeleteRealmHandler sets the operation handler for the delete realm operation
 	RealmsDeleteRealmHandler realms.DeleteRealmHandler
+	// UsersDeleteUserHandler sets the operation handler for the delete user operation
+	UsersDeleteUserHandler users.DeleteUserHandler
 	// RealmsGetRealmHandler sets the operation handler for the get realm operation
 	RealmsGetRealmHandler realms.GetRealmHandler
 	// UsersGetUserHandler sets the operation handler for the get user operation
@@ -220,6 +225,9 @@ func (o *TribeAPI) Validate() error {
 	}
 	if o.RealmsDeleteRealmHandler == nil {
 		unregistered = append(unregistered, "realms.DeleteRealmHandler")
+	}
+	if o.UsersDeleteUserHandler == nil {
+		unregistered = append(unregistered, "users.DeleteUserHandler")
 	}
 	if o.RealmsGetRealmHandler == nil {
 		unregistered = append(unregistered, "realms.GetRealmHandler")
@@ -344,6 +352,10 @@ func (o *TribeAPI) initHandlerCache() {
 		o.handlers["DELETE"] = make(map[string]http.Handler)
 	}
 	o.handlers["DELETE"]["/realms/{realm_id}"] = realms.NewDeleteRealm(o.context, o.RealmsDeleteRealmHandler)
+	if o.handlers["DELETE"] == nil {
+		o.handlers["DELETE"] = make(map[string]http.Handler)
+	}
+	o.handlers["DELETE"]["/realms/{realm_id}/users/{username}"] = users.NewDeleteUser(o.context, o.UsersDeleteUserHandler)
 	if o.handlers["GET"] == nil {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}

@@ -236,11 +236,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "updated",
-            "schema": {
-              "$ref": "#/definitions/GetRealmResponse"
-            },
-            "x-go-name": "UpdatedRealm"
+            "$ref": "#/responses/OK"
           },
           "400": {
             "$ref": "#/responses/BadRequest"
@@ -275,11 +271,7 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "deleted",
-            "schema": {
-              "$ref": "#/definitions/GetRealmResponse"
-            },
-            "x-go-name": "DeletedRealm"
+            "$ref": "#/responses/OK"
           },
           "400": {
             "$ref": "#/responses/BadRequest"
@@ -437,6 +429,44 @@ func init() {
               "$ref": "#/definitions/GetUserResponse"
             },
             "x-go-name": "FoundUser"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/responses/TooManyRequests"
+          },
+          "default": {
+            "$ref": "#/responses/Unexpected"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete user",
+        "operationId": "delete-user",
+        "parameters": [
+          {
+            "$ref": "#/parameters/realm_id"
+          },
+          {
+            "$ref": "#/parameters/username"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/OK"
           },
           "400": {
             "$ref": "#/responses/BadRequest"
@@ -745,6 +775,10 @@ func init() {
         "$ref": "#/definitions/Problem"
       },
       "x-go-name": "NotFound"
+    },
+    "OK": {
+      "description": "Successfully created.",
+      "x-go-name": "OK"
     },
     "TooManyRequests": {
       "description": "Rate limiting",
@@ -1076,11 +1110,8 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "updated",
-            "schema": {
-              "$ref": "#/definitions/GetRealmResponse"
-            },
-            "x-go-name": "UpdatedRealm"
+            "description": "Successfully created.",
+            "x-go-name": "OK"
           },
           "400": {
             "description": "Invalid request body.",
@@ -1143,11 +1174,8 @@ func init() {
         ],
         "responses": {
           "200": {
-            "description": "deleted",
-            "schema": {
-              "$ref": "#/definitions/GetRealmResponse"
-            },
-            "x-go-name": "DeletedRealm"
+            "description": "Successfully created.",
+            "x-go-name": "OK"
           },
           "400": {
             "description": "Invalid request body.",
@@ -1400,6 +1428,77 @@ func init() {
               "$ref": "#/definitions/GetUserResponse"
             },
             "x-go-name": "FoundUser"
+          },
+          "400": {
+            "description": "Invalid request body.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "BadRequest"
+          },
+          "401": {
+            "description": "Invalid token.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unauthorized"
+          },
+          "403": {
+            "description": "Insufficient scope.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Forbidden"
+          },
+          "404": {
+            "description": "Not found.",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "NotFound"
+          },
+          "429": {
+            "description": "Rate limiting",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Too Many Requests"
+          },
+          "default": {
+            "description": "Unexpected error",
+            "schema": {
+              "$ref": "#/definitions/Problem"
+            },
+            "x-go-name": "Unexpected"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "users"
+        ],
+        "summary": "Delete user",
+        "operationId": "delete-user",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Realm id.",
+            "name": "realm_id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Username.",
+            "name": "username",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully created.",
+            "x-go-name": "OK"
           },
           "400": {
             "description": "Invalid request body.",
@@ -1733,6 +1832,10 @@ func init() {
         "$ref": "#/definitions/Problem"
       },
       "x-go-name": "NotFound"
+    },
+    "OK": {
+      "description": "Successfully created.",
+      "x-go-name": "OK"
     },
     "TooManyRequests": {
       "description": "Rate limiting",

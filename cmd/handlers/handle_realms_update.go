@@ -37,7 +37,7 @@ func (h *updateRealmHandler) Handle(input apirealms.UpdateRealmParams) middlewar
 	if err != nil {
 		return h.newInternalError(err)
 	}
-	return apirealms.NewUpdateRealmUpdatedRealm()
+	return apirealms.NewUpdateRealmOK()
 }
 
 func (h *updateRealmHandler) newInternalError(err error) *apirealms.UpdateRealmDefault {

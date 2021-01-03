@@ -13,48 +13,28 @@ import (
 	"github.com/grepplabs/tribe/api/v1/models"
 )
 
-// UpdateRealmUpdatedRealmCode is the HTTP code returned for type UpdateRealmUpdatedRealm
-const UpdateRealmUpdatedRealmCode int = 200
+// UpdateRealmOKCode is the HTTP code returned for type UpdateRealmOK
+const UpdateRealmOKCode int = 200
 
-/*UpdateRealmUpdatedRealm updated
+/*UpdateRealmOK Successfully created.
 
-swagger:response updateRealmUpdatedRealm
+swagger:response updateRealmOK
 */
-type UpdateRealmUpdatedRealm struct {
-
-	/*
-	  In: Body
-	*/
-	Payload *models.GetRealmResponse `json:"body,omitempty"`
+type UpdateRealmOK struct {
 }
 
-// NewUpdateRealmUpdatedRealm creates UpdateRealmUpdatedRealm with default headers values
-func NewUpdateRealmUpdatedRealm() *UpdateRealmUpdatedRealm {
+// NewUpdateRealmOK creates UpdateRealmOK with default headers values
+func NewUpdateRealmOK() *UpdateRealmOK {
 
-	return &UpdateRealmUpdatedRealm{}
-}
-
-// WithPayload adds the payload to the update realm updated realm response
-func (o *UpdateRealmUpdatedRealm) WithPayload(payload *models.GetRealmResponse) *UpdateRealmUpdatedRealm {
-	o.Payload = payload
-	return o
-}
-
-// SetPayload sets the payload to the update realm updated realm response
-func (o *UpdateRealmUpdatedRealm) SetPayload(payload *models.GetRealmResponse) {
-	o.Payload = payload
+	return &UpdateRealmOK{}
 }
 
 // WriteResponse to the client
-func (o *UpdateRealmUpdatedRealm) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+func (o *UpdateRealmOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.Header().Del(runtime.HeaderContentType) //Remove Content-Type on empty responses
 
 	rw.WriteHeader(200)
-	if o.Payload != nil {
-		payload := o.Payload
-		if err := producer.Produce(rw, payload); err != nil {
-			panic(err) // let the recovery middleware deal with this
-		}
-	}
 }
 
 // UpdateRealmBadRequestCode is the HTTP code returned for type UpdateRealmBadRequest
