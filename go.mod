@@ -20,7 +20,9 @@ require (
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.6.1
+	github.com/sykesm/zap-logfmt v0.0.4
 	github.com/upper/db/v4 v4.0.1
+	go.uber.org/zap v1.12.0
 	golang.org/x/crypto v0.0.0-20201124201722-c8d3bf9c5392
 	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 	golang.org/x/sys v0.0.0-20201126144705-a4b67b81d3d2

@@ -9,9 +9,9 @@ import (
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/pkg/crypto"
+	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var serveAdminCmd = &cobra.Command{
@@ -25,6 +25,7 @@ var serveAdminCmd = &cobra.Command{
 var (
 	dbConfig           = new(config.DBConfig)
 	passwordBCryptCost int
+	logConfig          = new(log.Configuration)
 )
 
 func init() {
@@ -40,19 +41,28 @@ func init() {
 	serveAdminCmd.Flags().IntVar(&passwordBCryptCost, "security-password-bcrypt-cost", crypto.DefaultBCryptCost, "BCrypt cost used for password hashing. The minimum allowable cost is 4, default is 10")
 
 	//TODO: set following after default value is removed _ = serveAdminCmd.MarkFlagRequired("db-connection-url")
+
+	serveAdminCmd.Flags().StringVar(&logConfig.LogLevel, "log-level", log.Info, "Log filtering One of: [fatal, error, warn, info, debug]")
+	serveAdminCmd.Flags().StringVar(&logConfig.LogFormat, "log-format", log.LogFormatLogfmt, "Log format to use. One of: [logfmt, json, plain]")
+	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Time, "log-field-name-time", log.TimeKey, "Log time field name")
+	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Message, "log-field-name-message", log.MessageKey, "Log message field name")
+	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Error, "log-field-name-error", log.ErrorKey, "Log error field name")
+	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Caller, "log-field-name-caller", log.CallerKey, "Log caller field name")
+	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Level, "log-field-name-level", log.LevelKey, "Log time field name")
 }
 
 func runtribeAdmin() {
+	logger := log.NewLogger(*logConfig)
 
 	ctx := context.Background()
-	srv, err := NewAdminServer(ctx)
+	srv, err := NewAdminServer(ctx, logger)
 	if err != nil {
-		log.Fatalln(err)
+		logger.WithError(err).Fatalf("admin server creation failed")
 	}
 	defer srv.Shutdown()
 
 	if err := srv.Serve(); err != nil {
-		log.Fatalln(err)
+		logger.WithError(err).Fatalf("serve failed")
 	}
 }
 
@@ -61,15 +71,17 @@ type AdminServer struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
+	logger   log.Logger
 	dbClient client.Client
 }
 
-func NewAdminServer(ctx context.Context) (*AdminServer, error) {
+func NewAdminServer(ctx context.Context, logger log.Logger) (*AdminServer, error) {
 	sCtx, cancel := context.WithCancel(ctx)
 
 	srv := AdminServer{
 		ctx:    sCtx,
 		cancel: cancel,
+		logger: logger,
 		Server: NewServer(),
 	}
 	srv.configureServerFlags()
@@ -94,10 +106,13 @@ func (s *AdminServer) initDBClient() error {
 func (s *AdminServer) instantiateAPI() *restapi.TribeAPI {
 	swaggerSpec, err := loads.Embedded(server.SwaggerJSON, server.FlatSwaggerJSON)
 	if err != nil {
-		log.Fatalln(err)
+		s.logger.WithError(err).Fatalf("loading swagger api failed")
 	}
 
 	api := restapi.NewTribeAPI(swaggerSpec)
+	api.Logger = func(format string, args ...interface{}) {
+		s.logger.Printf(format, args...)
+	}
 
 	// healthz
 	api.HealthzGetReadyHandler = handlers.NewHealthzGetReadyHandler()
