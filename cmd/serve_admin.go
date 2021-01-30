@@ -25,13 +25,13 @@ var serveAdminCmd = &cobra.Command{
 var (
 	dbConfig           = new(config.DBConfig)
 	passwordBCryptCost int
-	logConfig          = new(log.Configuration)
 )
 
 func init() {
 	serveCmd.AddCommand(serveAdminCmd)
 	initServerFlags(serveAdminCmd, serverConfig)
 	initCorsFlags(serveAdminCmd, server.CorsConfig)
+	initLogFlags(serveAdminCmd, logConfig)
 
 	serveAdminCmd.Flags().StringVar(&dbConfig.ConnectionURL, "db-connection-url", "postgresql://tribe:secret@localhost:5432/tribe?sslmode=disable", "data source name as connection URI e.g. postgresql://user:password@localhost:5432/dbname?sslmode=disable")
 	serveAdminCmd.Flags().IntVar(&dbConfig.MaxIdleConns, "db-max-idle-conns", 2, "The maximum number of connections in the idle connection pool")
@@ -41,14 +41,6 @@ func init() {
 	serveAdminCmd.Flags().IntVar(&passwordBCryptCost, "security-password-bcrypt-cost", crypto.DefaultBCryptCost, "BCrypt cost used for password hashing. The minimum allowable cost is 4, default is 10")
 
 	//TODO: set following after default value is removed _ = serveAdminCmd.MarkFlagRequired("db-connection-url")
-
-	serveAdminCmd.Flags().StringVar(&logConfig.LogLevel, "log-level", log.Info, "Log filtering One of: [fatal, error, warn, info, debug]")
-	serveAdminCmd.Flags().StringVar(&logConfig.LogFormat, "log-format", log.LogFormatLogfmt, "Log format to use. One of: [logfmt, json, plain]")
-	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Time, "log-field-name-time", log.TimeKey, "Log time field name")
-	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Message, "log-field-name-message", log.MessageKey, "Log message field name")
-	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Error, "log-field-name-error", log.ErrorKey, "Log error field name")
-	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Caller, "log-field-name-caller", log.CallerKey, "Log caller field name")
-	serveAdminCmd.Flags().StringVar(&logConfig.LogFieldNames.Level, "log-field-name-level", log.LevelKey, "Log time field name")
 }
 
 func runtribeAdmin() {

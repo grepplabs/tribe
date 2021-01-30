@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/grepplabs/tribe/config"
+	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/spf13/cobra"
 )
 
@@ -15,4 +16,14 @@ func initCorsFlags(cmd *cobra.Command, cc *config.CorsConfig) {
 	cmd.Flags().BoolVar(&cc.Options.OptionsPassthrough, "cors-options-passthrough", false, "Instructs preflight to let other potential next handlers to process the OPTIONS method. Turn this on if your application handles OPTIONS")
 	cmd.Flags().IntVar(&cc.Options.MaxAge, "cors-max-age", 0, "Indicates how long (in seconds) the results of a preflight request can be cached. The default is 0 which stands for no max age")
 	cmd.Flags().BoolVar(&cc.Options.Debug, "cors-debug", false, "Adds additional output to debug server side CORS issues")
+}
+
+func initLogFlags(cmd *cobra.Command, lc *log.Configuration) {
+	cmd.Flags().StringVar(&lc.LogLevel, "log-level", log.Info, "Log filtering One of: [fatal, error, warn, info, debug]")
+	cmd.Flags().StringVar(&lc.LogFormat, "log-format", log.LogFormatLogfmt, "Log format to use. One of: [logfmt, json, plain]")
+	cmd.Flags().StringVar(&lc.LogFieldNames.Time, "log-field-name-time", log.TimeKey, "Log time field name")
+	cmd.Flags().StringVar(&lc.LogFieldNames.Message, "log-field-name-message", log.MessageKey, "Log message field name")
+	cmd.Flags().StringVar(&lc.LogFieldNames.Error, "log-field-name-error", log.ErrorKey, "Log error field name")
+	cmd.Flags().StringVar(&lc.LogFieldNames.Caller, "log-field-name-caller", log.CallerKey, "Log caller field name")
+	cmd.Flags().StringVar(&lc.LogFieldNames.Level, "log-field-name-level", log.LevelKey, "Log time field name")
 }

@@ -3,12 +3,14 @@ package cmd
 import (
 	"github.com/grepplabs/tribe/api/v1/server"
 	"github.com/grepplabs/tribe/config"
+	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/spf13/cobra"
 	"time"
 )
 
 var (
 	serverConfig = new(config.ServerConfig)
+	logConfig    = new(log.Configuration)
 )
 
 // serveCmd represents the server command
