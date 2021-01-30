@@ -6,6 +6,7 @@ package realms
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"io"
 	"net/http"
 
@@ -13,12 +14,14 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 
 	"github.com/grepplabs/tribe/api/v1/models"
 )
 
 // NewUpdateRealmParams creates a new UpdateRealmParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdateRealmParams() UpdateRealmParams {
 
 	return UpdateRealmParams{}
@@ -69,6 +72,11 @@ func (o *UpdateRealmParams) BindRequest(r *http.Request, route *middleware.Match
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.Realm = &body
 			}
@@ -76,11 +84,11 @@ func (o *UpdateRealmParams) BindRequest(r *http.Request, route *middleware.Match
 	} else {
 		res = append(res, errors.Required("realm", "body", ""))
 	}
+
 	rRealmID, rhkRealmID, _ := route.Params.GetOK("realm_id")
 	if err := o.bindRealmID(rRealmID, rhkRealmID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -96,7 +104,6 @@ func (o *UpdateRealmParams) bindRealmID(rawData []string, hasKey bool, formats s
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.RealmID = raw
 
 	return nil

@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -40,15 +42,19 @@ func (m *UpdateRealmRequest) Validate(formats strfmt.Registry) error {
 }
 
 func (m *UpdateRealmRequest) validateDescription(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Description) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("description", "body", string(m.Description), 255); err != nil {
+	if err := validate.MaxLength("description", "body", m.Description, 255); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this update realm request based on context it is used
+func (m *UpdateRealmRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

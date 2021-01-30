@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -51,12 +53,11 @@ func (m *CreateRealmRequest) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CreateRealmRequest) validateDescription(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Description) { // not required
 		return nil
 	}
 
-	if err := validate.MaxLength("description", "body", string(m.Description), 255); err != nil {
+	if err := validate.MaxLength("description", "body", m.Description, 255); err != nil {
 		return err
 	}
 
@@ -69,18 +70,23 @@ func (m *CreateRealmRequest) validateRealmID(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("realm_id", "body", string(*m.RealmID), 1); err != nil {
+	if err := validate.MinLength("realm_id", "body", *m.RealmID, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("realm_id", "body", string(*m.RealmID), 64); err != nil {
+	if err := validate.MaxLength("realm_id", "body", *m.RealmID, 64); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("realm_id", "body", string(*m.RealmID), `^[a-zA-Z0-9_-]*$`); err != nil {
+	if err := validate.Pattern("realm_id", "body", *m.RealmID, `^[a-zA-Z0-9_-]*$`); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this create realm request based on context it is used
+func (m *CreateRealmRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 

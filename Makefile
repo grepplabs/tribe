@@ -43,8 +43,8 @@ vendor:
 tidy:
 	GO111MODULE=on go mod tidy
 
-SWAGGER_VERSION := v0.25.0
-SWAGGER := docker run -u $(shell id -u):$(shell id -g) --rm -v $(CURDIR):$(CURDIR) -w $(CURDIR) --entrypoint swagger quay.io/goswagger/swagger:$(SWAGGER_VERSION)
+SWAGGER_VERSION := v0.26.0
+SWAGGER := docker run -u $(shell id -u):$(shell id -g) --rm -v $(CURDIR):$(CURDIR) -w $(CURDIR) -e GOCACHE=/tmp/.cache --entrypoint swagger quay.io/goswagger/swagger:$(SWAGGER_VERSION)
 
 delete-api:
 	@rm -rf api/v1/client/

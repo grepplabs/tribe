@@ -17,7 +17,8 @@ import (
 )
 
 // NewListUsersParams creates a new ListUsersParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewListUsersParams() ListUsersParams {
 
 	return ListUsersParams{}
@@ -73,7 +74,6 @@ func (o *ListUsersParams) BindRequest(r *http.Request, route *middleware.Matched
 	if err := o.bindRealmID(rRealmID, rhkRealmID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -89,6 +89,7 @@ func (o *ListUsersParams) bindLimit(rawData []string, hasKey bool, formats strfm
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -109,7 +110,7 @@ func (o *ListUsersParams) bindLimit(rawData []string, hasKey bool, formats strfm
 // validateLimit carries on validations for parameter Limit
 func (o *ListUsersParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 0, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 0, false); err != nil {
 		return err
 	}
 
@@ -125,6 +126,7 @@ func (o *ListUsersParams) bindOffset(rawData []string, hasKey bool, formats strf
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -147,7 +149,6 @@ func (o *ListUsersParams) bindRealmID(rawData []string, hasKey bool, formats str
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.RealmID = raw
 
 	return nil

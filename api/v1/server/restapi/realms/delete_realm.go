@@ -29,7 +29,7 @@ func NewDeleteRealm(ctx *middleware.Context, handler DeleteRealmHandler) *Delete
 	return &DeleteRealm{Context: ctx, Handler: handler}
 }
 
-/*DeleteRealm swagger:route DELETE /realms/{realm_id} realms deleteRealm
+/* DeleteRealm swagger:route DELETE /realms/{realm_id} realms deleteRealm
 
 Delete realm
 
@@ -45,14 +45,12 @@ func (o *DeleteRealm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewDeleteRealmParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

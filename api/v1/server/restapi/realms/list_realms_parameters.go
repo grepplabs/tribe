@@ -17,7 +17,8 @@ import (
 )
 
 // NewListRealmsParams creates a new ListRealmsParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewListRealmsParams() ListRealmsParams {
 
 	return ListRealmsParams{}
@@ -63,7 +64,6 @@ func (o *ListRealmsParams) BindRequest(r *http.Request, route *middleware.Matche
 	if err := o.bindOffset(qOffset, qhkOffset, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -79,6 +79,7 @@ func (o *ListRealmsParams) bindLimit(rawData []string, hasKey bool, formats strf
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}
@@ -99,7 +100,7 @@ func (o *ListRealmsParams) bindLimit(rawData []string, hasKey bool, formats strf
 // validateLimit carries on validations for parameter Limit
 func (o *ListRealmsParams) validateLimit(formats strfmt.Registry) error {
 
-	if err := validate.MinimumInt("limit", "query", int64(*o.Limit), 0, false); err != nil {
+	if err := validate.MinimumInt("limit", "query", *o.Limit, 0, false); err != nil {
 		return err
 	}
 
@@ -115,6 +116,7 @@ func (o *ListRealmsParams) bindOffset(rawData []string, hasKey bool, formats str
 
 	// Required: false
 	// AllowEmptyValue: false
+
 	if raw == "" { // empty values pass all other validations
 		return nil
 	}

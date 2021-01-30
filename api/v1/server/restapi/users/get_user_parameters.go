@@ -14,7 +14,8 @@ import (
 )
 
 // NewGetUserParams creates a new GetUserParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetUserParams() GetUserParams {
 
 	return GetUserParams{}
@@ -59,7 +60,6 @@ func (o *GetUserParams) BindRequest(r *http.Request, route *middleware.MatchedRo
 	if err := o.bindUsername(rUsername, rhkUsername, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -75,7 +75,6 @@ func (o *GetUserParams) bindRealmID(rawData []string, hasKey bool, formats strfm
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.RealmID = raw
 
 	return nil
@@ -90,7 +89,6 @@ func (o *GetUserParams) bindUsername(rawData []string, hasKey bool, formats strf
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Username = raw
 
 	return nil

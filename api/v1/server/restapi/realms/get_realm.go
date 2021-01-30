@@ -29,7 +29,7 @@ func NewGetRealm(ctx *middleware.Context, handler GetRealmHandler) *GetRealm {
 	return &GetRealm{Context: ctx, Handler: handler}
 }
 
-/*GetRealm swagger:route GET /realms/{realm_id} realms getRealm
+/* GetRealm swagger:route GET /realms/{realm_id} realms getRealm
 
 Get realm
 
@@ -45,14 +45,12 @@ func (o *GetRealm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewGetRealmParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

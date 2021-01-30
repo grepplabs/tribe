@@ -6,6 +6,7 @@ package users
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"io"
 	"net/http"
 
@@ -13,12 +14,14 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 
 	"github.com/grepplabs/tribe/api/v1/models"
 )
 
 // NewUpdateUserParams creates a new UpdateUserParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewUpdateUserParams() UpdateUserParams {
 
 	return UpdateUserParams{}
@@ -79,6 +82,11 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.User = &body
 			}
@@ -86,11 +94,11 @@ func (o *UpdateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 	} else {
 		res = append(res, errors.Required("user", "body", ""))
 	}
+
 	rUsername, rhkUsername, _ := route.Params.GetOK("username")
 	if err := o.bindUsername(rUsername, rhkUsername, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -106,7 +114,6 @@ func (o *UpdateUserParams) bindRealmID(rawData []string, hasKey bool, formats st
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.RealmID = raw
 
 	return nil
@@ -121,7 +128,6 @@ func (o *UpdateUserParams) bindUsername(rawData []string, hasKey bool, formats s
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.Username = raw
 
 	return nil

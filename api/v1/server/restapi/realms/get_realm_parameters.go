@@ -14,7 +14,8 @@ import (
 )
 
 // NewGetRealmParams creates a new GetRealmParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewGetRealmParams() GetRealmParams {
 
 	return GetRealmParams{}
@@ -49,7 +50,6 @@ func (o *GetRealmParams) BindRequest(r *http.Request, route *middleware.MatchedR
 	if err := o.bindRealmID(rRealmID, rhkRealmID, route.Formats); err != nil {
 		res = append(res, err)
 	}
-
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -65,7 +65,6 @@ func (o *GetRealmParams) bindRealmID(rawData []string, hasKey bool, formats strf
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.RealmID = raw
 
 	return nil

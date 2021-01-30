@@ -6,6 +6,7 @@ package realms
 // Editing this file might prove futile when you re-run the generate command
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 
@@ -36,7 +37,7 @@ func NewListRealms(ctx *middleware.Context, handler ListRealmsHandler) *ListReal
 	return &ListRealms{Context: ctx, Handler: handler}
 }
 
-/*ListRealms swagger:route GET /realms realms listRealms
+/* ListRealms swagger:route GET /realms realms listRealms
 
 List realms
 
@@ -52,14 +53,12 @@ func (o *ListRealms) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewListRealmsParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }
@@ -104,7 +103,6 @@ func (o *ListRealmsFoundRealmsBody) Validate(formats strfmt.Registry) error {
 }
 
 func (o *ListRealmsFoundRealmsBody) validateLinks(formats strfmt.Registry) error {
-
 	if swag.IsZero(o.Links) { // not required
 		return nil
 	}
@@ -150,6 +148,56 @@ func (o *ListRealmsFoundRealmsBody) validateTotal(formats strfmt.Registry) error
 
 	if err := validate.Required("listRealmsFoundRealms"+"."+"total", "body", o.Total); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+// ContextValidate validate this list realms found realms body based on the context it is used
+func (o *ListRealmsFoundRealmsBody) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := o.contextValidateLinks(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := o.contextValidateResults(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (o *ListRealmsFoundRealmsBody) contextValidateLinks(ctx context.Context, formats strfmt.Registry) error {
+
+	if o.Links != nil {
+		if err := o.Links.ContextValidate(ctx, formats); err != nil {
+			if ve, ok := err.(*errors.Validation); ok {
+				return ve.ValidateName("listRealmsFoundRealms" + "." + "_links")
+			}
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (o *ListRealmsFoundRealmsBody) contextValidateResults(ctx context.Context, formats strfmt.Registry) error {
+
+	for i := 0; i < len(o.Results); i++ {
+
+		if o.Results[i] != nil {
+			if err := o.Results[i].ContextValidate(ctx, formats); err != nil {
+				if ve, ok := err.(*errors.Validation); ok {
+					return ve.ValidateName("listRealmsFoundRealms" + "." + "results" + "." + strconv.Itoa(i))
+				}
+				return err
+			}
+		}
+
 	}
 
 	return nil

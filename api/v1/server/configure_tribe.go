@@ -9,16 +9,16 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/grepplabs/tribe/config"
+	"github.com/gorilla/handlers"
 	"github.com/rs/cors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/gorilla/handlers"
 	"github.com/grepplabs/tribe/api/v1/server/restapi"
 	"github.com/grepplabs/tribe/api/v1/server/restapi/healthz"
+	"github.com/grepplabs/tribe/config"
 )
 
 //go:generate swagger generate server --target ../../v1 --name Tribe --spec ../openapi.yaml --api-package restapi --server-package server --principal interface{} --exclude-main
@@ -80,7 +80,7 @@ func configureTLS(tlsConfig *tls.Config) {
 // As soon as server is initialized but not run yet, this function will be called.
 // If you need to modify a config, store server instance to stop it individually later, this is the place.
 // This function can be called multiple times, depending on the number of serving schemes.
-// scheme value will be set accordingly: "http", "https" or "unix"
+// scheme value will be set accordingly: "http", "https" or "unix".
 func configureServer(s *http.Server, scheme, addr string) {
 	s.BaseContext = func(_ net.Listener) context.Context {
 		return ServerCtx
@@ -88,13 +88,13 @@ func configureServer(s *http.Server, scheme, addr string) {
 }
 
 // The middleware configuration is for the handler executors. These do not apply to the swagger.json document.
-// The middleware executes after routing but before authentication, binding and validation
+// The middleware executes after routing but before authentication, binding and validation.
 func setupMiddlewares(handler http.Handler) http.Handler {
 	return handler
 }
 
 // The middleware configuration happens before anything, this middleware also applies to serving the swagger.json document.
-// So this is a good place to plug in a panic handling middleware, logging and metrics
+// So this is a good place to plug in a panic handling middleware, logging and metrics.
 func setupGlobalMiddleware(handler http.Handler) http.Handler {
 	if CorsConfig.Enabled {
 		handler = cors.New(CorsConfig.Options).Handler(handler)

@@ -6,6 +6,7 @@ package users
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
 	"io"
 	"net/http"
 
@@ -13,12 +14,14 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/validate"
 
 	"github.com/grepplabs/tribe/api/v1/models"
 )
 
 // NewCreateUserParams creates a new CreateUserParams object
-// no default values defined in spec.
+//
+// There are no default values defined in the spec.
 func NewCreateUserParams() CreateUserParams {
 
 	return CreateUserParams{}
@@ -74,6 +77,11 @@ func (o *CreateUserParams) BindRequest(r *http.Request, route *middleware.Matche
 				res = append(res, err)
 			}
 
+			ctx := validate.WithOperationRequest(context.Background())
+			if err := body.ContextValidate(ctx, route.Formats); err != nil {
+				res = append(res, err)
+			}
+
 			if len(res) == 0 {
 				o.User = &body
 			}
@@ -96,7 +104,6 @@ func (o *CreateUserParams) bindRealmID(rawData []string, hasKey bool, formats st
 
 	// Required: true
 	// Parameter is provided by construction from the route
-
 	o.RealmID = raw
 
 	return nil

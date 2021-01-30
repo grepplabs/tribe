@@ -29,7 +29,7 @@ func NewUpdateRealm(ctx *middleware.Context, handler UpdateRealmHandler) *Update
 	return &UpdateRealm{Context: ctx, Handler: handler}
 }
 
-/*UpdateRealm swagger:route PUT /realms/{realm_id} realms updateRealm
+/* UpdateRealm swagger:route PUT /realms/{realm_id} realms updateRealm
 
 Update realm
 
@@ -45,14 +45,12 @@ func (o *UpdateRealm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewUpdateRealmParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

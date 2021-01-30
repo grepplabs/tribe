@@ -29,7 +29,7 @@ func NewCreateRealm(ctx *middleware.Context, handler CreateRealmHandler) *Create
 	return &CreateRealm{Context: ctx, Handler: handler}
 }
 
-/*CreateRealm swagger:route POST /realms realms createRealm
+/* CreateRealm swagger:route POST /realms realms createRealm
 
 Create new realm
 
@@ -45,14 +45,12 @@ func (o *CreateRealm) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		r = rCtx
 	}
 	var Params = NewCreateRealmParams()
-
 	if err := o.Context.BindValidRequest(r, route, &Params); err != nil { // bind params
 		o.Context.Respond(rw, r, route.Produces, route, err)
 		return
 	}
 
 	res := o.Handler.Handle(Params) // actually handle the request
-
 	o.Context.Respond(rw, r, route.Produces, route, res)
 
 }

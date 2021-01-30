@@ -6,6 +6,8 @@ package models
 // Editing this file might prove futile when you re-run the swagger generate command
 
 import (
+	"context"
+
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
@@ -66,7 +68,6 @@ func (m *CreateUserRequest) Validate(formats strfmt.Registry) error {
 }
 
 func (m *CreateUserRequest) validateEmail(formats strfmt.Registry) error {
-
 	if swag.IsZero(m.Email) { // not required
 		return nil
 	}
@@ -97,18 +98,23 @@ func (m *CreateUserRequest) validateUsername(formats strfmt.Registry) error {
 		return err
 	}
 
-	if err := validate.MinLength("username", "body", string(*m.Username), 1); err != nil {
+	if err := validate.MinLength("username", "body", *m.Username, 1); err != nil {
 		return err
 	}
 
-	if err := validate.MaxLength("username", "body", string(*m.Username), 320); err != nil {
+	if err := validate.MaxLength("username", "body", *m.Username, 320); err != nil {
 		return err
 	}
 
-	if err := validate.Pattern("username", "body", string(*m.Username), `^[a-zA-Z0-9!$%&()*+,.\/:;<=>?@\[\]^_{|}~-]*$`); err != nil {
+	if err := validate.Pattern("username", "body", *m.Username, `^[a-zA-Z0-9!$%&()*+,.\/:;<=>?@\[\]^_{|}~-]*$`); err != nil {
 		return err
 	}
 
+	return nil
+}
+
+// ContextValidate validates this create user request based on context it is used
+func (m *CreateUserRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
 	return nil
 }
 
