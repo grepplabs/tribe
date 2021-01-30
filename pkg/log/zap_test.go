@@ -2,6 +2,7 @@ package log
 
 import (
 	"errors"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -88,6 +89,8 @@ func TestZapLogger(t *testing.T) {
 			tc.logger.Infof("Info log '%s'", tc.name)
 			tc.logger.Warnf("Warn log '%s'", tc.name)
 			tc.logger.Errorf("WithError log '%s'", tc.name)
+			_, err := tc.logger.Write([]byte(fmt.Sprintf("Write interface'%s'", tc.name)))
+			a.Nil(err)
 
 			a.Equal(tc.levelEnabled.debug, tc.logger.IsDebug())
 			a.Equal(tc.levelEnabled.info, tc.logger.IsInfo())

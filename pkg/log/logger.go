@@ -1,5 +1,7 @@
 package log
 
+import "os"
+
 //Fields Type to pass when we want to call WithFields for structured logging
 type Fields map[string]interface{}
 
@@ -40,8 +42,20 @@ const (
 	LogFormatLogfmt = "logfmt"
 )
 
+const (
+	EnvLogFormat           = "LOG_FORMAT"
+	EnvLogLevel            = "LOG_LEVEL"
+	EnvLogFieldNameTime    = "LOG_FIELD_NAME_TIME"
+	EnvLogFieldNameMessage = "LOG_FIELD_NAME_MESSAGE"
+	EnvLogFieldNameError   = "LOG_FIELD_NAME_ERROR"
+	EnvLogFieldNameCaller  = "LOG_FIELD_NAME_CALLER"
+	EnvLogFieldNameLevel   = "LOG_FIELD_NAME_LEVEL"
+)
+
 //Logger is our contract for the logger
 type Logger interface {
+	Write(p []byte) (n int, err error)
+
 	Printf(format string, args ...interface{})
 
 	Debugf(format string, args ...interface{})
@@ -100,12 +114,27 @@ var DefaultLogger = NewDefaultLogger()
 //NewDefaultLogger returns an instance of logger with default parameters
 func NewDefaultLogger() Logger {
 	config := Configuration{
-		LogFormat: LogFormatLogfmt,
-		LogLevel:  Info,
+		LogFormat: getEnv(EnvLogFormat, LogFormatLogfmt),
+		LogLevel:  getEnv(EnvLogLevel, Info),
+		LogFieldNames: LogFieldNames{
+			Time:    getEnv(EnvLogFieldNameTime, TimeKey),
+			Message: getEnv(EnvLogFieldNameMessage, MessageKey),
+			Level:   getEnv(EnvLogFieldNameLevel, LevelKey),
+			Caller:  getEnv(EnvLogFieldNameCaller, CallerKey),
+			Error:   getEnv(EnvLogFieldNameError, ErrorKey),
+		},
 	}
 	return newZapLogger(config)
 }
 
 func Printf(format string, args ...interface{}) {
 	DefaultLogger.Printf(format, args...)
+}
+
+func getEnv(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if len(value) == 0 {
+		return defaultValue
+	}
+	return value
 }

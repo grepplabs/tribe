@@ -155,3 +155,12 @@ func (l *zapLogger) WithError(err error) Logger {
 	}
 	return l.WithFields(Fields{l.errorKey: err.Error()})
 }
+
+func (l *zapLogger) Write(b []byte) (n int, err error) {
+	n = len(b)
+	if n > 0 && b[n-1] == '\n' {
+		b = b[:n-1]
+	}
+	l.sugaredLogger.Info(string(b))
+	return n, nil
+}
