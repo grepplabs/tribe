@@ -106,6 +106,8 @@ func (s *AdminServer) instantiateAPI() *restapi.TribeAPI {
 		s.logger.Printf(format, args...)
 	}
 
+	// api.AddMiddlewareFor() can add additional middleware handler
+
 	// healthz
 	api.HealthzGetReadyHandler = handlers.NewHealthzGetReadyHandler()
 	api.HealthzGetHealthyHandler = handlers.NewHealthzGetHealthyHandler()
