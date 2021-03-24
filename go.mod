@@ -4,7 +4,9 @@ go 1.16
 
 require (
 	github.com/form3tech-oss/jwt-go v3.2.2+incompatible
+	github.com/golang/protobuf v1.4.2
 	github.com/google/go-cmp v0.5.5 // indirect
+	github.com/google/tink/go v1.5.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 	github.com/sykesm/zap-logfmt v0.0.4
