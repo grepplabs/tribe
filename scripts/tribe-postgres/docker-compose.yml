@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13.2
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=tribe
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=tribe
+
