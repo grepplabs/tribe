@@ -7,9 +7,12 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/google/go-cmp v0.5.5 // indirect
 	github.com/google/tink/go v1.5.0
+	github.com/jmoiron/sqlx v1.3.1
+	github.com/kamilsk/retry/v5 v5.0.0-rc8
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
 	github.com/sykesm/zap-logfmt v0.0.4
+	github.com/upper/db/v4 v4.1.0
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
 	golang.org/x/crypto v0.0.0-20210317152858-513c2a44f670

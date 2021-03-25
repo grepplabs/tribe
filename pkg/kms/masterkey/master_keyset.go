@@ -7,23 +7,21 @@ import (
 	"github.com/google/tink/go/aead/subtle"
 	"github.com/google/tink/go/keyset"
 	"github.com/pkg/errors"
-	"log"
 )
 
 var errEmptyMasterSecret = errors.New("kms: master secret is empty")
 
-type MasterKeySet interface {
-	EncryptKeySet() ([]byte, error)
-	GetHandle() *keyset.Handle
-	KeyId() uint32
+type MasterKeyset interface {
+	EncryptKeyset() ([]byte, error)
+	GetKeyset() *keyset.Handle
 }
 
-type masterKeySet struct {
+type masterKeyset struct {
 	kh     *keyset.Handle
 	secret []byte
 }
 
-func NewMasterKeySet(secret []byte) (MasterKeySet, error) {
+func NewMasterKeyset(secret []byte) (MasterKeyset, error) {
 	if len(secret) == 0 {
 		return nil, errEmptyMasterSecret
 	}
@@ -31,31 +29,31 @@ func NewMasterKeySet(secret []byte) (MasterKeySet, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &masterKeySet{
+	return &masterKeyset{
 		secret: secret,
 		kh:     kh,
 	}, nil
 }
 
-// Decrypt decrypts encrypted key set using provided secret
-func Decrypt(encryptedKeySet []byte, secret []byte) (MasterKeySet, error) {
+// DecryptKeyset decrypts encrypted key set using provided secret
+func DecryptKeyset(encryptedKeyset []byte, secret []byte) (MasterKeyset, error) {
 	masterKey, err := getKMSEnvelopeAEAD(secret)
 	if err != nil {
 		return nil, err
 	}
-	r := keyset.NewBinaryReader(bytes.NewBuffer(encryptedKeySet))
+	r := keyset.NewBinaryReader(bytes.NewBuffer(encryptedKeyset))
 	kh, err := keyset.Read(r, masterKey)
 	if err != nil {
 		return nil, err
 	}
-	return &masterKeySet{
+	return &masterKeyset{
 		kh:     kh,
 		secret: secret,
 	}, nil
 }
 
-// EncryptKeySet encrypts key set
-func (m masterKeySet) EncryptKeySet() ([]byte, error) {
+// EncryptKeyset encrypts key set
+func (m masterKeyset) EncryptKeyset() ([]byte, error) {
 	masterKey, err := getKMSEnvelopeAEAD(m.secret)
 	if err != nil {
 		return nil, err
@@ -63,17 +61,13 @@ func (m masterKeySet) EncryptKeySet() ([]byte, error) {
 	buf := new(bytes.Buffer)
 	w := keyset.NewBinaryWriter(buf)
 	if err := m.kh.Write(w, masterKey); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	return buf.Bytes(), nil
 }
 
-func (m masterKeySet) GetHandle() *keyset.Handle {
+func (m masterKeyset) GetKeyset() *keyset.Handle {
 	return m.kh
-}
-
-func (m masterKeySet) KeyId() uint32 {
-	return m.kh.KeysetInfo().PrimaryKeyId
 }
 
 func getKMSEnvelopeAEAD(secret []byte) (*aead.KMSEnvelopeAEAD, error) {
