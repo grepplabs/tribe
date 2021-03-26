@@ -23,7 +23,7 @@ type sqlClient struct {
 	api service.API
 }
 
-func NewSQLClient(logger log.Logger, config config.DBConfig) (Client, error) {
+func NewSQLClient(logger log.Logger, config *config.DBConfig) (Client, error) {
 	dbs, err := newDBSession(logger, config)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (c sqlClient) API() service.API {
 	return c.api
 }
 
-func newDBSession(logger log.Logger, config config.DBConfig) (db.Session, error) {
+func newDBSession(logger log.Logger, config *config.DBConfig) (db.Session, error) {
 	//TODO: dbx with tracing and profiling ()
 	dsnUrl, err := url.Parse(config.ConnectionURL)
 	if err != nil {

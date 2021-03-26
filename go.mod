@@ -9,7 +9,10 @@ require (
 	github.com/google/tink/go v1.5.0
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/kamilsk/retry/v5 v5.0.0-rc8
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
+	github.com/spf13/cobra v1.1.3
+	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	github.com/sykesm/zap-logfmt v0.0.4
 	github.com/upper/db/v4 v4.1.0
