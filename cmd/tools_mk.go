@@ -1,12 +1,18 @@
 package cmd
 
 import (
+	"context"
+	"encoding/base64"
+	"fmt"
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/client"
+	"github.com/grepplabs/tribe/pkg/kms/masterkey"
 	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
-
 	"github.com/spf13/cobra"
+	"time"
+
+	dtomodel "github.com/grepplabs/tribe/database/model"
 )
 
 func init() {
@@ -47,6 +53,23 @@ func runMk(logger log.Logger, dbConfig *config.DBConfig) error {
 	if err != nil {
 		return errors.Wrap(err, "create sql client failed")
 	}
-	_ = dbClient
-	return nil
+
+	secret := []byte("secret")
+	mk, err := masterkey.NewMasterKeyset(secret)
+	if err != nil {
+		return errors.Wrap(err, "create master keyset failed")
+	}
+	encryptedKeyset, err := mk.EncryptKeyset()
+	if err != nil {
+		return errors.Wrap(err, "encrypt master keyset failed")
+	}
+	keyset := dtomodel.KMSKeyset{
+		Id:              "",
+		CreatedAt:       time.Time{},
+		Name:            "masterkey",
+		NextId:          "",
+		EncryptedKeyset: base64.StdEncoding.EncodeToString(encryptedKeyset),
+		Description:     fmt.Sprintf("Master keyset Id %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId),
+	}
+	return dbClient.API().CreateKMSKeyset(context.Background(), &keyset)
 }

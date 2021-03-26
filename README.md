@@ -3,3 +3,12 @@
 **Work in progress**
 
 User management and identity server
+
+
+* Phase 1
+    * Storage
+        * Object store (Minio API)
+        * SQL (Postgres) - realm is a new database
+    * Automatic jwt rotation 
+    * Server TLS cert rotation 
+    * KMS / Master Password
