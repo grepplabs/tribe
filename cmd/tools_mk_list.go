@@ -17,16 +17,11 @@ func init() {
 	mkCmd.AddCommand(newMkListCmd())
 }
 
-type mkListCmdConfig struct {
-	Limit  int64
-	Offset int64
-}
-
 func newMkListCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	dbConfig := config.NewDBConfig()
 	outputConfig := config.NewOutputConfig()
-	mkCmdConfig := new(mkListCmdConfig)
+	paginationConfig := config.NewPaginationConfig()
 
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -41,7 +36,7 @@ func newMkListCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("mk")
-			result, err := runMkList(logger, dbConfig, mkCmdConfig)
+			result, err := runMkList(logger, dbConfig, paginationConfig)
 			if err != nil {
 				log.Errorf("mk list command failed: %v", err)
 				os.Exit(1)
@@ -58,17 +53,15 @@ func newMkListCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
-
-	cmd.Flags().Int64Var(&mkCmdConfig.Limit, "limit", 0, "The numbers of entries to return")
-	cmd.Flags().Int64Var(&mkCmdConfig.Offset, "offset", 0, "The number of items to skip before starting to collect the result set")
+	cmd.Flags().AddFlagSet(paginationConfig.FlagSet())
 
 	return cmd
 }
 
-func runMkList(logger log.Logger, dbConfig *config.DBConfig, mkCmdConfig *mkListCmdConfig) (*dtomodel.KMSKeysetList, error) {
+func runMkList(logger log.Logger, dbConfig *config.DBConfig, paginationConfig *config.PaginationConfig) (*dtomodel.KMSKeysetList, error) {
 	dbClient, err := client.NewSQLClient(logger, dbConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "create sql client failed")
 	}
-	return dbClient.API().ListKMSKeysets(context.Background(), utils.Int64(mkCmdConfig.Offset), utils.Int64(mkCmdConfig.Limit))
+	return dbClient.API().ListKMSKeysets(context.Background(), utils.Int64(paginationConfig.Offset), utils.Int64(paginationConfig.Limit))
 }

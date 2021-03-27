@@ -60,7 +60,7 @@ func (m KMSKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, lim
 	if offset != nil && *offset > 0 {
 		result = result.Offset(int(*offset))
 	}
-	if limit != nil && int(*limit) > 0 {
+	if limit != nil && *limit > 0 {
 		// limit 0 all elements
 		result = result.Limit(int(*limit))
 	}
