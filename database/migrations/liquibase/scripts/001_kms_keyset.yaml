@@ -35,7 +35,43 @@ databaseChangeLog:
             type:  varchar(255)
     - addPrimaryKey:
         tableName: tribe_kms_keyset
-        columnNames:  id
-        constraintName:  tribe_kms_keyset_id_pk
-
-
+        columnNames: id,name
+        constraintName:  pk_tribe_kms_keyset
+    - addForeignKeyConstraint:
+        baseTableName: tribe_kms_keyset
+        baseColumnNames:  next_id,name
+        referencedTableName: tribe_kms_keyset
+        referencedColumnNames: id,name
+        constraintName:  fk_tribe_kms_keyset_next_id
+- changeSet:
+    id:  2
+    author: "Michal Budzyn"
+    changes:
+    - createIndex:
+        tableName: tribe_kms_keyset
+        indexName: tribe_kms_keyset_name
+        unique: true
+        columns:
+          - column:
+              name: name
+    - modifySql:
+        dbms: postgresql
+        append:
+            value: where next_id is null
+- changeSet:
+    id:  3
+    author: "Michal Budzyn"
+    changes:
+    - createIndex:
+        tableName: tribe_kms_keyset
+        indexName: tribe_kms_keyset_next_id
+        unique: true
+        columns:
+          - column:
+              name: next_id
+          - column:
+              name: name
+    - modifySql:
+        dbms: postgresql
+        append:
+            value: where next_id is not null

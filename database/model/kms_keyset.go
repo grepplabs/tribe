@@ -1,14 +1,16 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type KMSKeyset struct {
-	Id              string    `db:"id"`
-	CreatedAt       time.Time `db:"created_at,omitempty"`
-	Name            string    `db:"name"`
-	NextId          string    `db:"next_id,omitempty"`
-	EncryptedKeyset string    `db:"encrypted_keyset"`
-	Description     string    `db:"description"`
+	KeysetID        string     `db:"id"`
+	CreatedAt       *time.Time `db:"created_at,omitempty"`
+	Name            string     `db:"name"`
+	NextID          *string    `db:"next_id,omitempty"`
+	EncryptedKeyset string     `db:"encrypted_keyset"`
+	Description     *string    `db:"description,omitempty"`
 }
 
 func (KMSKeyset) TableName() string {
@@ -17,4 +19,5 @@ func (KMSKeyset) TableName() string {
 
 type KMSKeysetList struct {
 	KMSKeysets []KMSKeyset
+	Page       Page
 }
