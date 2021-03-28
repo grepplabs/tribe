@@ -27,16 +27,23 @@ type mkCreateCmdConfig struct {
 	masterSecret string
 }
 
+func (c *mkCreateCmdConfig) Validate() error {
+	return nil
+}
+
 func newMkCreateCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	dbConfig := config.NewDBConfig()
 	outputConfig := config.NewOutputConfig()
-	mkCmdConfig := new(mkCreateCmdConfig)
+	cmdConfig := new(mkCreateCmdConfig)
 
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Create master key",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := cmdConfig.Validate(); err != nil {
+				return err
+			}
 			if err := outputConfig.Validate(); err != nil {
 				return err
 			}
@@ -45,8 +52,8 @@ func newMkCreateCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			producer := outputConfig.MustGetProducer()
 
-			logger := log.NewLogger(logConfig.Configuration).WithName("mk")
-			result, err := runMkCreate(logger, dbConfig, mkCmdConfig)
+			logger := log.NewLogger(logConfig.Configuration).WithName("mk-create")
+			result, err := runMkCreate(logger, dbConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk create command failed: %v", err)
 				os.Exit(1)
@@ -62,17 +69,17 @@ func newMkCreateCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
-	cmd.Flags().StringVar(&mkCmdConfig.keysetName, "keyset-name", defaultKeysetName, "Name of the keyset")
-	cmd.Flags().StringVar(&mkCmdConfig.keysetNextID, "keyset-next-id", "", "Identifier of the keyset, KeysetID")
-	cmd.Flags().StringVar(&mkCmdConfig.masterSecret, "master-secret", "", "Master secret")
+	cmd.Flags().StringVar(&cmdConfig.keysetName, "keyset-name", defaultKeysetName, "Name of the keyset")
+	cmd.Flags().StringVar(&cmdConfig.keysetNextID, "keyset-next-id", "", "Identifier of the keyset, KeysetID")
+	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "Master secret")
 	// flag will be optional when
 	_ = cmd.MarkFlagRequired("master-secret")
 
 	return cmd
 }
 
-func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, mkCmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
-	mk, err := masterkey.NewMasterKeyset([]byte(mkCmdConfig.masterSecret))
+func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
+	mk, err := masterkey.NewMasterKeyset([]byte(cmdConfig.masterSecret))
 	if err != nil {
 		return nil, errors.Wrap(err, "create master keyset failed")
 	}
@@ -86,8 +93,8 @@ func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, mkCmdConfig *mkCr
 	}
 	keyset := dtomodel.KMSKeyset{
 		KeysetID:        uuid.NewString(),
-		Name:            mkCmdConfig.keysetName,
-		NextID:          utils.EmptyToNullString(mkCmdConfig.keysetNextID),
+		Name:            cmdConfig.keysetName,
+		NextID:          utils.EmptyToNullString(cmdConfig.keysetNextID),
 		EncryptedKeyset: base64.StdEncoding.EncodeToString(encryptedKeyset),
 		Description:     utils.EmptyToNullString(fmt.Sprintf("Master keyset KeyId %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId)),
 	}

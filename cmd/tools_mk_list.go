@@ -35,7 +35,7 @@ func newMkListCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			producer := outputConfig.MustGetProducer()
 
-			logger := log.NewLogger(logConfig.Configuration).WithName("mk")
+			logger := log.NewLogger(logConfig.Configuration).WithName("mk-list")
 			result, err := runMkList(logger, dbConfig, paginationConfig)
 			if err != nil {
 				log.Errorf("mk list command failed: %v", err)

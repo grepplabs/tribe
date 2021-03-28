@@ -24,7 +24,7 @@ func newMkGetCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	dbConfig := config.NewDBConfig()
 	outputConfig := config.NewOutputConfig()
-	mkCmdConfig := new(mkGetCmdConfig)
+	cmdConfig := new(mkGetCmdConfig)
 
 	cmd := &cobra.Command{
 		Use:   "get",
@@ -38,8 +38,8 @@ func newMkGetCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			producer := outputConfig.MustGetProducer()
 
-			logger := log.NewLogger(logConfig.Configuration).WithName("mk")
-			result, err := runMkGet(logger, dbConfig, mkCmdConfig)
+			logger := log.NewLogger(logConfig.Configuration).WithName("mk-get")
+			result, err := runMkGet(logger, dbConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk get command failed: %v", err)
 				os.Exit(1)
@@ -57,16 +57,16 @@ func newMkGetCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
-	cmd.Flags().StringVar(&mkCmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset, KeysetID")
+	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset, KeysetID")
 	_ = cmd.MarkFlagRequired("keyset-id")
 
 	return cmd
 }
 
-func runMkGet(logger log.Logger, dbConfig *config.DBConfig, mkCmdConfig *mkGetCmdConfig) (*dtomodel.KMSKeyset, error) {
+func runMkGet(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkGetCmdConfig) (*dtomodel.KMSKeyset, error) {
 	dbClient, err := client.NewSQLClient(logger, dbConfig)
 	if err != nil {
 		return nil, errors.Wrap(err, "create sql client failed")
 	}
-	return dbClient.API().GetKMSKeyset(context.Background(), mkCmdConfig.keysetID)
+	return dbClient.API().GetKMSKeyset(context.Background(), cmdConfig.keysetID)
 }
