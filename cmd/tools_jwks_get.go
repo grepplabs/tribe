@@ -1,0 +1,142 @@
+package cmd
+
+import (
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"github.com/google/tink/go/keyset"
+	"github.com/grepplabs/tribe/config"
+	"github.com/grepplabs/tribe/database/client"
+	"github.com/grepplabs/tribe/database/model"
+	"github.com/grepplabs/tribe/pkg/kms/dbkms"
+	"github.com/grepplabs/tribe/pkg/log"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+	"gopkg.in/square/go-jose.v2"
+	"os"
+)
+
+func init() {
+	jwksCmd.AddCommand(newJwksGetCmd())
+}
+
+type jwksGetConfig struct {
+	jwksID string
+
+	use string
+	kid string
+
+	masterSecret string
+}
+
+func (c *jwksGetConfig) Validate() error {
+	if c.kid == "" && c.jwksID == "" {
+		return errors.New("either jwks-id or kid is required")
+	}
+	return nil
+}
+
+func newJwksGetCmd() *cobra.Command {
+	logConfig := config.NewLogConfig()
+	dbConfig := config.NewDBConfig()
+	outputConfig := config.NewOutputConfig()
+	cmdConfig := new(jwksGetConfig)
+
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get JWKS",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := cmdConfig.Validate(); err != nil {
+				return err
+			}
+			if err := outputConfig.Validate(); err != nil {
+				return err
+			}
+			return nil
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			producer := outputConfig.MustGetProducer()
+
+			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-get")
+			result, err := runJwksGet(logger, dbConfig, cmdConfig)
+			if err != nil {
+				log.Errorf("jwks get command failed: %v", err)
+				os.Exit(1)
+			}
+			if result == nil {
+				log.Errorf("jwks get command failed, not found jwksID %s", cmdConfig.jwksID)
+				os.Exit(1)
+			}
+			err = producer.Produce(os.Stdout, result)
+			if err != nil {
+				log.Errorf("failed to write result: %v", err)
+				os.Exit(1)
+			}
+		},
+	}
+
+	cmd.Flags().AddFlagSet(logConfig.FlagSet())
+	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
+	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
+
+	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks, JWKSID")
+	cmd.Flags().StringVar(&cmdConfig.use, "use", "sig", "How the key is meant to be used. One of: [sig, enc]")
+	cmd.Flags().StringVar(&cmdConfig.kid, "kid", "", "Unique key identifier. The Key ID is generated if not specified.")
+	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "KMS master secret")
+
+	return cmd
+}
+
+func runJwksGet(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGetConfig) (interface{}, error) {
+	jwks, err := getJwks(logger, dbConfig, cmdConfig)
+	if err != nil {
+		return nil, err
+	}
+	mk, err := getMasterKey(logger, dbConfig, jwks.KMSKeysetURI, cmdConfig.masterSecret)
+	if err != nil {
+		return nil, err
+	}
+	encryptedKeys, err := base64.StdEncoding.DecodeString(jwks.EncryptedJwks)
+	if err != nil {
+		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
+	}
+	a := dbkms.NewAEAD(func() (*keyset.Handle, error) {
+		return mk.GetKeyset(), nil
+	})
+	decryptedKeys, err := a.Decrypt(encryptedKeys, []byte{})
+	if err != nil {
+		return nil, errors.Wrap(err, "AEAD keys decryption failed")
+	}
+	var result jose.JSONWebKeySet
+	err = json.Unmarshal(decryptedKeys, &result)
+	if err != nil {
+		return nil, errors.Wrap(err, "Unmarshal JSONWebKeySet failed")
+	}
+	return &result, nil
+}
+
+func getJwks(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGetConfig) (*model.JWKS, error) {
+	dbClient, err := client.NewSQLClient(logger, dbConfig)
+	if err != nil {
+		return nil, err
+	}
+	var jwks *model.JWKS
+	if cmdConfig.jwksID != "" {
+		jwks, err = dbClient.API().GetJWKS(context.Background(), cmdConfig.jwksID)
+		if err != nil {
+			return nil, err
+		}
+		if jwks == nil {
+			return nil, errors.Errorf("not found JWKS ID: %s", cmdConfig.jwksID)
+		}
+	} else {
+		jwks, err = dbClient.API().GetJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
+		if err != nil {
+			return nil, err
+		}
+		if jwks == nil {
+			return nil, errors.Errorf("not found JWKS kid, sig: %s, %s", cmdConfig.kid, cmdConfig.use)
+		}
+	}
+	return jwks, nil
+}

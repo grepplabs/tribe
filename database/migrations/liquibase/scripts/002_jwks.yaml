@@ -1,0 +1,60 @@
+databaseChangeLog:
+- changeSet:
+    id:  1
+    author: "Michal Budzyn"
+    changes:
+    - createTable:
+        tableName:  tribe_jwks
+        columns:
+        - column:
+            name:  id
+            type:  varchar(255)
+            constraints:
+              nullable: false
+        - column:
+            name:  created_at
+            type:  timestamp
+            defaultValueComputed: (now() AT TIME ZONE 'utc')
+            constraints:
+              nullable: false
+        - column:
+            name:  kid
+            type:  varchar(255)
+            constraints:
+              nullable: false
+        - column:
+            name:  alg
+            type:  varchar(32)
+            constraints:
+              nullable: false
+        - column:
+            name:  use
+            type:  varchar(32)
+            constraints:
+              nullable: false
+        - column:
+            name:  kms_keyset_uri
+            type:  varchar(255)
+            constraints:
+              nullable: false
+        - column:
+            name:  encrypted_jwks
+            type:  text
+            constraints:
+              nullable: false
+        - column:
+            name:  description
+            type:  varchar(255)
+    - addPrimaryKey:
+        tableName: tribe_jwks
+        columnNames: id
+        constraintName:  pk_tribe_jwks
+    - createIndex:
+        tableName: tribe_jwks
+        unique: true
+        indexName: tribe_jwks_kid_use
+        columns:
+        - column:
+            name:  kid
+        - column:
+            name:  use

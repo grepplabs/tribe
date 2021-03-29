@@ -44,12 +44,14 @@ func newMkGetCmd() *cobra.Command {
 				log.Errorf("mk get command failed: %v", err)
 				os.Exit(1)
 			}
-			if result != nil {
-				err = producer.Produce(os.Stdout, result)
-				if err != nil {
-					log.Errorf("failed to write result: %v", err)
-					os.Exit(1)
-				}
+			if result == nil {
+				log.Errorf("mk get command failed, not found keysetID %s", cmdConfig.keysetID)
+				os.Exit(1)
+			}
+			err = producer.Produce(os.Stdout, result)
+			if err != nil {
+				log.Errorf("failed to write result: %v", err)
+				os.Exit(1)
 			}
 		},
 	}

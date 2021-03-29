@@ -12,4 +12,10 @@ type API interface {
 	GetKMSKeyset(ctx context.Context, keysetID string) (*model.KMSKeyset, error)
 	GetKMSKeysetsByName(ctx context.Context, name string) (*model.KMSKeysetList, error)
 	ListKMSKeysets(ctx context.Context, offset *int64, limit *int64) (*model.KMSKeysetList, error)
+
+	CreateJWKS(ctx context.Context, jwks *model.JWKS) error
+	GetJWKS(ctx context.Context, id string) (*model.JWKS, error)
+	GetJWKSByKidUse(ctx context.Context, kid string, use string) (*model.JWKS, error)
+	DeleteJWKS(ctx context.Context, id string) error
+	DeleteJWKSByKidUse(ctx context.Context, kid string, use string) error
 }

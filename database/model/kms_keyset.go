@@ -18,6 +18,6 @@ func (KMSKeyset) TableName() string {
 }
 
 type KMSKeysetList struct {
-	KMSKeysets []KMSKeyset
-	Page       Page
+	List []KMSKeyset
+	Page Page
 }
