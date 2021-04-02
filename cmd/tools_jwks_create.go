@@ -4,22 +4,16 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"github.com/google/tink/go/keyset"
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/database/model"
 	"github.com/grepplabs/tribe/pkg/jwk"
 	"github.com/grepplabs/tribe/pkg/kms/dbkms"
-	"github.com/grepplabs/tribe/pkg/kms/masterkey"
 	"github.com/grepplabs/tribe/pkg/log"
-	"github.com/grepplabs/tribe/pkg/utils"
 	"github.com/pkg/errors"
-	"os"
-	"strings"
-
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func init() {
@@ -100,14 +94,16 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 	if kid == "" {
 		kid = uuid.NewString()
 	}
-	gen := jwk.NewJWKSGenerator()
-	keys, err := gen.Generate(kid, cmdConfig.alg, cmdConfig.use)
+	keys, err := jwk.NewJWKSGenerator().Generate(kid, cmdConfig.alg, cmdConfig.use)
 	if err != nil {
 		return nil, err
 	}
 	if cmdConfig.save {
-		var mk masterkey.MasterKeyset
-		mk, err = getMasterKey(logger, dbConfig, cmdConfig.kmsKeysetURI, cmdConfig.masterSecret)
+		dbClient, err := client.NewSQLClient(logger, dbConfig)
+		if err != nil {
+			return nil, errors.Wrap(err, "create sql client failed")
+		}
+		dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBClient(dbClient))
 		if err != nil {
 			return nil, err
 		}
@@ -115,17 +111,9 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 		if err != nil {
 			return nil, err
 		}
-		a := dbkms.NewAEAD(func() (*keyset.Handle, error) {
-			return mk.GetKeyset(), nil
-		})
-		encryptedKeys, err := a.Encrypt(bytes, []byte{})
+		encryptedKeys, err := dbkmsClient.GetAEAD(cmdConfig.kmsKeysetURI, cmdConfig.masterSecret).Encrypt(bytes, []byte{})
 		if err != nil {
 			return nil, errors.Wrap(err, "AEAD keys encryption failed")
-		}
-		encodedEncryptedKeys := base64.StdEncoding.EncodeToString(encryptedKeys)
-		dbClient, err := client.NewSQLClient(logger, dbConfig)
-		if err != nil {
-			return nil, errors.Wrap(err, "create sql client failed")
 		}
 		jwks := &model.JWKS{
 			ID:            uuid.NewString(),
@@ -133,8 +121,7 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 			Alg:           cmdConfig.alg,
 			Use:           cmdConfig.use,
 			KMSKeysetURI:  cmdConfig.kmsKeysetURI,
-			EncryptedJwks: encodedEncryptedKeys,
-			Description:   utils.EmptyToNullString(fmt.Sprintf("Used master keyset KeyId %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId)),
+			EncryptedJwks: base64.StdEncoding.EncodeToString(encryptedKeys),
 		}
 		err = dbClient.API().CreateJWKS(context.Background(), jwks)
 		if err != nil {
@@ -142,36 +129,4 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 		}
 	}
 	return keys, nil
-}
-
-func getMasterKey(logger log.Logger, dbConfig *config.DBConfig, keyURI string, masterSecret string) (masterkey.MasterKeyset, error) {
-	dbClient, err := client.NewSQLClient(logger, dbConfig)
-	if err != nil {
-		return nil, errors.Wrap(err, "create sql client failed")
-	}
-	const dbPrefix = "db://"
-	if !strings.HasPrefix(strings.ToLower(keyURI), dbPrefix) {
-		return nil, fmt.Errorf("uriPrefix must start with %s, but got %s", dbPrefix, keyURI)
-	}
-	keysetID := strings.TrimPrefix(keyURI, dbPrefix)
-	ks, err := dbClient.API().GetKMSKeyset(context.Background(), keysetID)
-	if err != nil {
-		return nil, errors.Wrapf(err, "get kms keyset failed: %s", keysetID)
-	}
-	if ks == nil {
-		return nil, errors.Errorf("kms keyset not found: %s", keysetID)
-	}
-	if masterSecret == "" {
-		return nil, errors.Errorf("master-secret is required for kms-keyset-uri: %s", keyURI)
-	}
-
-	encryptedKeyset, err := base64.StdEncoding.DecodeString(ks.EncryptedKeyset)
-	if err != nil {
-		return nil, errors.Wrap(err, "base64 decode of encrypted keyset failed")
-	}
-	mk, err := masterkey.DecryptKeyset(encryptedKeyset, []byte(masterSecret))
-	if err != nil {
-		return nil, errors.Wrap(err, "decrypt master keyset failed")
-	}
-	return mk, nil
 }

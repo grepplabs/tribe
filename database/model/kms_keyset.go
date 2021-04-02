@@ -10,7 +10,7 @@ type KMSKeyset struct {
 	Name            string     `db:"name"`
 	NextID          *string    `db:"next_id,omitempty"`
 	EncryptedKeyset string     `db:"encrypted_keyset"`
-	Description     *string    `db:"description,omitempty"`
+	Description     string     `db:"description"`
 }
 
 func (KMSKeyset) TableName() string {

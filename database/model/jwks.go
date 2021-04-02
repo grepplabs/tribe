@@ -10,7 +10,7 @@ type JWKS struct {
 	Use           string     `db:"use"`
 	KMSKeysetURI  string     `db:"kms_keyset_uri"`
 	EncryptedJwks string     `db:"encrypted_jwks"`
-	Description   *string    `db:"description,omitempty"`
+	Description   string     `db:"description"`
 }
 
 func (JWKS) TableName() string {

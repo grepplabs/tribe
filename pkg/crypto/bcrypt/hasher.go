@@ -2,7 +2,6 @@ package bcrypt
 
 import (
 	"github.com/grepplabs/tribe/pkg/crypto"
-	"github.com/grepplabs/tribe/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,7 +17,7 @@ func NewPasswordHasher(options ...Option) (crypto.PasswordHasher, error) {
 	}
 	for _, option := range options {
 		if err := option(hasher); err != nil {
-			return nil, errors.WithStack(err)
+			return nil, err
 		}
 	}
 	return hasher, nil

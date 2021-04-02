@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/google/tink/go/keyset"
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/database/model"
@@ -92,18 +91,15 @@ func runJwksGet(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGet
 	if err != nil {
 		return nil, err
 	}
-	mk, err := getMasterKey(logger, dbConfig, jwks.KMSKeysetURI, cmdConfig.masterSecret)
-	if err != nil {
-		return nil, err
-	}
 	encryptedKeys, err := base64.StdEncoding.DecodeString(jwks.EncryptedJwks)
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	a := dbkms.NewAEAD(func() (*keyset.Handle, error) {
-		return mk.GetKeyset(), nil
-	})
-	decryptedKeys, err := a.Decrypt(encryptedKeys, []byte{})
+	dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBConfig(dbConfig))
+	if err != nil {
+		return nil, err
+	}
+	decryptedKeys, err := dbkmsClient.GetAEAD(jwks.KMSKeysetURI, cmdConfig.masterSecret).Decrypt(encryptedKeys, []byte{})
 	if err != nil {
 		return nil, errors.Wrap(err, "AEAD keys decryption failed")
 	}

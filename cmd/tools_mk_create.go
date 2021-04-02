@@ -96,7 +96,7 @@ func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCrea
 		Name:            cmdConfig.keysetName,
 		NextID:          utils.EmptyToNullString(cmdConfig.keysetNextID),
 		EncryptedKeyset: base64.StdEncoding.EncodeToString(encryptedKeyset),
-		Description:     utils.EmptyToNullString(fmt.Sprintf("Master keyset KeyId %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId)),
+		Description:     fmt.Sprintf("Master keyset KeyId %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId),
 	}
 	return &keyset, dbClient.API().CreateKMSKeyset(context.Background(), &keyset)
 }
