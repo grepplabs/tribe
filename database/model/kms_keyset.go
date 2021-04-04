@@ -5,12 +5,10 @@ import (
 )
 
 type KMSKeyset struct {
-	KeysetID        string     `db:"id"`
-	CreatedAt       *time.Time `db:"created_at,omitempty"`
-	Name            string     `db:"name"`
-	NextID          *string    `db:"next_id,omitempty"`
-	EncryptedKeyset string     `db:"encrypted_keyset"`
-	Description     string     `db:"description"`
+	ID              string    `db:"id" json:"id"`
+	CreatedAt       time.Time `db:"created_at" json:"created_at"`
+	EncryptedKeyset string    `db:"encrypted_keyset" json:"encrypted_keyset"`
+	Description     string    `db:"description" json:"description"`
 }
 
 func (KMSKeyset) TableName() string {
@@ -18,6 +16,6 @@ func (KMSKeyset) TableName() string {
 }
 
 type KMSKeysetList struct {
-	List []KMSKeyset
-	Page Page
+	List []KMSKeyset `json:"list"`
+	Page Page        `json:"page"`
 }

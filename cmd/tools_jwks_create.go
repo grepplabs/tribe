@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"os"
+	"time"
 )
 
 func init() {
@@ -21,6 +22,8 @@ func init() {
 }
 
 type jwksCreateConfig struct {
+	jwksID string
+
 	alg string
 	use string
 	kid string
@@ -78,6 +81,7 @@ func newJwksCreateCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
+	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks")
 	cmd.Flags().StringVar(&cmdConfig.alg, "alg", "RS256", "The specific rfc7518 JWA algorithm to be used to generated the key. One of: [HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384, PS512]")
 	cmd.Flags().StringVar(&cmdConfig.use, "use", "sig", "How the key is meant to be used. One of: [sig, enc]")
 	cmd.Flags().StringVar(&cmdConfig.kid, "kid", "", "Unique key identifier. The Key ID is generated if not specified.")
@@ -90,6 +94,10 @@ func newJwksCreateCmd() *cobra.Command {
 }
 
 func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksCreateConfig) (interface{}, error) {
+	id := cmdConfig.jwksID
+	if id == "" {
+		id = uuid.NewString()
+	}
 	kid := cmdConfig.kid
 	if kid == "" {
 		kid = uuid.NewString()
@@ -116,7 +124,8 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 			return nil, errors.Wrap(err, "AEAD keys encryption failed")
 		}
 		jwks := &model.JWKS{
-			ID:            uuid.NewString(),
+			ID:            id,
+			CreatedAt:     time.Now(),
 			Kid:           kid,
 			Alg:           cmdConfig.alg,
 			Use:           cmdConfig.use,

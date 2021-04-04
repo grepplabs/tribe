@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"github.com/grepplabs/tribe/pkg/utils"
 	"os"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/config"
@@ -22,8 +22,7 @@ func init() {
 }
 
 type mkCreateCmdConfig struct {
-	keysetName   string
-	keysetNextID string
+	keysetID     string
 	masterSecret string
 }
 
@@ -69,8 +68,7 @@ func newMkCreateCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
-	cmd.Flags().StringVar(&cmdConfig.keysetName, "keyset-name", defaultKeysetName, "Name of the keyset")
-	cmd.Flags().StringVar(&cmdConfig.keysetNextID, "keyset-next-id", "", "Identifier of the keyset, KeysetID")
+	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
 	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "Master secret")
 	// flag will be optional when
 	_ = cmd.MarkFlagRequired("master-secret")
@@ -79,6 +77,11 @@ func newMkCreateCmd() *cobra.Command {
 }
 
 func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
+	id := cmdConfig.keysetID
+	if id == "" {
+		id = uuid.NewString()
+	}
+
 	mk, err := masterkey.NewMasterKeyset([]byte(cmdConfig.masterSecret))
 	if err != nil {
 		return nil, errors.Wrap(err, "create master keyset failed")
@@ -92,9 +95,8 @@ func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCrea
 		return nil, errors.Wrap(err, "create sql client failed")
 	}
 	keyset := dtomodel.KMSKeyset{
-		KeysetID:        uuid.NewString(),
-		Name:            cmdConfig.keysetName,
-		NextID:          utils.EmptyToNullString(cmdConfig.keysetNextID),
+		ID:              id,
+		CreatedAt:       time.Now(),
 		EncryptedKeyset: base64.StdEncoding.EncodeToString(encryptedKeyset),
 		Description:     fmt.Sprintf("Master keyset KeyId %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId),
 	}

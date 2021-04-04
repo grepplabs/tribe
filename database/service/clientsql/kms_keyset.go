@@ -50,7 +50,7 @@ func (m KMSKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	if kmsKeyset == nil {
 		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
 	}
-	err := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find(db.Cond{"id": kmsKeyset.KeysetID}).Update(kmsKeyset)
+	err := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find(db.Cond{"id": kmsKeyset.ID}).Update(kmsKeyset)
 	return errors.Wrap(err, "update kmsKeyset")
 
 }

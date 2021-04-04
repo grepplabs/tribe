@@ -59,7 +59,7 @@ func newMkGetCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
-	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset, KeysetID")
+	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
 	_ = cmd.MarkFlagRequired("keyset-id")
 
 	return cmd

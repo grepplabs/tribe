@@ -1,7 +1,7 @@
 package model
 
 type Page struct {
-	Offset *int64
-	Limit  *int64
-	Total  uint64
+	Offset *int64 `json:"offset,omitempty"`
+	Limit  *int64 `json:"limit,omitempty"`
+	Total  uint64 `json:"total"`
 }
