@@ -8,11 +8,11 @@ import (
 	"github.com/upper/db/v4"
 )
 
-type JWKSManager struct {
+type jwksManager struct {
 	dbs db.Session
 }
 
-func (m JWKSManager) CreateJWKS(ctx context.Context, jwks *model.JWKS) error {
+func (m jwksManager) CreateJWKS(ctx context.Context, jwks *model.JWKS) error {
 	if jwks == nil {
 		return service.ErrIllegalArgument{Reason: "Input parameter jwks is missing"}
 	}
@@ -23,7 +23,7 @@ func (m JWKSManager) CreateJWKS(ctx context.Context, jwks *model.JWKS) error {
 	return nil
 }
 
-func (m JWKSManager) GetJWKS(ctx context.Context, id string) (*model.JWKS, error) {
+func (m jwksManager) GetJWKS(ctx context.Context, id string) (*model.JWKS, error) {
 	if id == "" {
 		return nil, service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
@@ -38,7 +38,7 @@ func (m JWKSManager) GetJWKS(ctx context.Context, id string) (*model.JWKS, error
 	return &jwks, nil
 }
 
-func (m JWKSManager) GetJWKSByKidUse(ctx context.Context, kid string, use string) (*model.JWKS, error) {
+func (m jwksManager) GetJWKSByKidUse(ctx context.Context, kid string, use string) (*model.JWKS, error) {
 	if kid == "" || use == "" {
 		return nil, service.ErrIllegalArgument{Reason: "Input parameter kid/use is missing"}
 	}
@@ -53,7 +53,7 @@ func (m JWKSManager) GetJWKSByKidUse(ctx context.Context, kid string, use string
 	return &jwks, nil
 }
 
-func (m JWKSManager) DeleteJWKS(ctx context.Context, id string) error {
+func (m jwksManager) DeleteJWKS(ctx context.Context, id string) error {
 	if id == "" {
 		return service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
@@ -62,7 +62,7 @@ func (m JWKSManager) DeleteJWKS(ctx context.Context, id string) error {
 	return errors.Wrap(err, "delete id")
 }
 
-func (m JWKSManager) DeleteJWKSByKidUse(ctx context.Context, kid string, use string) error {
+func (m jwksManager) DeleteJWKSByKidUse(ctx context.Context, kid string, use string) error {
 	if kid == "" || use == "" {
 		return service.ErrIllegalArgument{Reason: "Input parameter kid/use is missing"}
 	}

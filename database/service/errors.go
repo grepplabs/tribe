@@ -17,3 +17,11 @@ type ErrNotFound struct {
 func (e ErrNotFound) Error() string {
 	return fmt.Sprintf("Not found: %q", e.Reason)
 }
+
+type ErrAlreadyExists struct {
+	Reason string
+}
+
+func (e ErrAlreadyExists) Error() string {
+	return fmt.Sprintf("The specified key already exists: %v", e.Reason)
+}

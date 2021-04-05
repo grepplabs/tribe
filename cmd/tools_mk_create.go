@@ -9,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/config"
-	"github.com/grepplabs/tribe/database/client"
 	dtomodel "github.com/grepplabs/tribe/database/model"
 	"github.com/grepplabs/tribe/pkg/kms/masterkey"
 	"github.com/grepplabs/tribe/pkg/log"
@@ -32,7 +31,9 @@ func (c *mkCreateCmdConfig) Validate() error {
 
 func newMkCreateCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
+	datastoreConfig := config.NewDatastoreConfig()
 	dbConfig := config.NewDBConfig()
+	minioConfig := config.NewMinioConfig()
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(mkCreateCmdConfig)
 
@@ -52,7 +53,7 @@ func newMkCreateCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("mk-create")
-			result, err := runMkCreate(logger, dbConfig, cmdConfig)
+			result, err := runMkCreate(logger, datastoreConfig, dbConfig, minioConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk create command failed: %v", err)
 				os.Exit(1)
@@ -65,7 +66,9 @@ func newMkCreateCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
+	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
+	cmd.Flags().AddFlagSet(minioConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
@@ -76,7 +79,7 @@ func newMkCreateCmd() *cobra.Command {
 	return cmd
 }
 
-func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
+func runMkCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbConfig *config.DBConfig, minioConfig *config.MinioConfig, cmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
 	id := cmdConfig.keysetID
 	if id == "" {
 		id = uuid.NewString()
@@ -90,9 +93,10 @@ func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCrea
 	if err != nil {
 		return nil, errors.Wrap(err, "encrypt master keyset failed")
 	}
-	dbClient, err := client.NewSQLClient(logger, dbConfig)
+
+	dsClient, err := getDatastoreClient(logger, datastoreConfig, dbConfig, minioConfig)
 	if err != nil {
-		return nil, errors.Wrap(err, "create sql client failed")
+		return nil, err
 	}
 	keyset := dtomodel.KMSKeyset{
 		ID:              id,
@@ -100,5 +104,5 @@ func runMkCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkCrea
 		EncryptedKeyset: base64.StdEncoding.EncodeToString(encryptedKeyset),
 		Description:     fmt.Sprintf("Master keyset KeyId %d", mk.GetKeyset().KeysetInfo().PrimaryKeyId),
 	}
-	return &keyset, dbClient.API().CreateKMSKeyset(context.Background(), &keyset)
+	return &keyset, dsClient.API().CreateKMSKeyset(context.Background(), &keyset)
 }

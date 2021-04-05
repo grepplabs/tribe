@@ -8,11 +8,11 @@ import (
 	"github.com/upper/db/v4"
 )
 
-type KMSKeysetManager struct {
+type kmsKeysetManager struct {
 	dbs db.Session
 }
 
-func (m KMSKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
+func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
 	if kmsKeyset == nil {
 		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
 	}
@@ -22,7 +22,7 @@ func (m KMSKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	}
 	return nil
 }
-func (m KMSKeysetManager) GetKMSKeyset(ctx context.Context, keysetID string) (*model.KMSKeyset, error) {
+func (m kmsKeysetManager) GetKMSKeyset(ctx context.Context, keysetID string) (*model.KMSKeyset, error) {
 	if keysetID == "" {
 		return nil, service.ErrIllegalArgument{Reason: "Input parameter keysetID is missing"}
 	}
@@ -37,7 +37,7 @@ func (m KMSKeysetManager) GetKMSKeyset(ctx context.Context, keysetID string) (*m
 	return &kmsKeyset, nil
 }
 
-func (m KMSKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) error {
+func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) error {
 	if keysetID == "" {
 		return service.ErrIllegalArgument{Reason: "Input parameter realmID is missing"}
 	}
@@ -46,7 +46,7 @@ func (m KMSKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) 
 	return errors.Wrap(err, "delete kmsKeyset")
 }
 
-func (m KMSKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
+func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
 	if kmsKeyset == nil {
 		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
 	}
@@ -54,7 +54,7 @@ func (m KMSKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	return errors.Wrap(err, "update kmsKeyset")
 
 }
-func (m KMSKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, limit *int64) (*model.KMSKeysetList, error) {
+func (m kmsKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, limit *int64) (*model.KMSKeysetList, error) {
 	var kmsKeyset model.KMSKeyset
 	result := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find().OrderBy("created_at")
 	if offset != nil && *offset > 0 {
@@ -80,24 +80,7 @@ func (m KMSKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, lim
 	}
 	return &model.KMSKeysetList{List: kmsKeysets, Page: model.Page{
 		Offset: offset,
-		Limit:  offset,
+		Limit:  limit,
 		Total:  total,
-	}}, nil
-}
-
-func (m KMSKeysetManager) GetKMSKeysetsByName(ctx context.Context, name string) (*model.KMSKeysetList, error) {
-	var kmsKeyset model.KMSKeyset
-	result := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find(db.Cond{"name": name}).OrderBy("created_at")
-
-	var kmsKeysets []model.KMSKeyset
-	err := result.All(&kmsKeysets)
-	if err != nil {
-		if errors.Is(err, db.ErrNoMoreRows) {
-			return nil, nil
-		}
-		return nil, errors.Wrap(err, "get by name kmsKeysets")
-	}
-	return &model.KMSKeysetList{List: kmsKeysets, Page: model.Page{
-		Total: uint64(len(kmsKeysets)),
 	}}, nil
 }

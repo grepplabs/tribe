@@ -10,6 +10,7 @@ require (
 	github.com/google/uuid v1.2.0
 	github.com/jmoiron/sqlx v1.3.1
 	github.com/kamilsk/retry/v5 v5.0.0-rc8
+	github.com/minio/minio-go/v7 v7.0.10
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.3

@@ -5,9 +5,7 @@ import (
 	"os"
 
 	"github.com/grepplabs/tribe/config"
-	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/pkg/log"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +19,9 @@ type mkDeleteCmdConfig struct {
 
 func newMkDeleteCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
+	datastoreConfig := config.NewDatastoreConfig()
 	dbConfig := config.NewDBConfig()
+	minioConfig := config.NewMinioConfig()
 	cmdConfig := new(mkDeleteCmdConfig)
 
 	cmd := &cobra.Command{
@@ -29,7 +29,7 @@ func newMkDeleteCmd() *cobra.Command {
 		Short: "Delete master key",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := log.NewLogger(logConfig.Configuration).WithName("mk-delete")
-			err := runMkDelete(logger, dbConfig, cmdConfig)
+			err := runMkDelete(logger, datastoreConfig, dbConfig, minioConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk delete command failed: %v", err)
 				os.Exit(1)
@@ -37,7 +37,9 @@ func newMkDeleteCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
+	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
 	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
+	cmd.Flags().AddFlagSet(minioConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
 	_ = cmd.MarkFlagRequired("keyset-id")
@@ -45,10 +47,10 @@ func newMkDeleteCmd() *cobra.Command {
 	return cmd
 }
 
-func runMkDelete(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *mkDeleteCmdConfig) error {
-	dbClient, err := client.NewSQLClient(logger, dbConfig)
+func runMkDelete(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbConfig *config.DBConfig, minioConfig *config.MinioConfig, cmdConfig *mkDeleteCmdConfig) error {
+	dsClient, err := getDatastoreClient(logger, datastoreConfig, dbConfig, minioConfig)
 	if err != nil {
-		return errors.Wrap(err, "create sql client failed")
+		return err
 	}
-	return dbClient.API().DeleteKMSKeyset(context.Background(), cmdConfig.keysetID)
+	return dsClient.API().DeleteKMSKeyset(context.Background(), cmdConfig.keysetID)
 }

@@ -28,7 +28,6 @@ func NewSQLClient(logger log.Logger, config *config.DBConfig) (Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	clientsql.NewAPIImpl(dbs)
 	return &sqlClient{
 		dbs: dbs,
 		api: clientsql.NewAPIImpl(dbs),
