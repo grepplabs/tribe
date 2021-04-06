@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/config"
-	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/database/model"
 	"github.com/grepplabs/tribe/pkg/jwk"
 	"github.com/grepplabs/tribe/pkg/kms/dbkms"
@@ -44,7 +43,7 @@ func (c *jwksCreateConfig) Validate() error {
 
 func newJwksCreateCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
-	dbConfig := config.NewDBConfig()
+	datastoreConfig := config.NewDatastoreConfig()
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(jwksCreateConfig)
 
@@ -64,7 +63,7 @@ func newJwksCreateCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-create")
-			result, err := runJwksCreate(logger, dbConfig, cmdConfig)
+			result, err := runJwksCreate(logger, datastoreConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("jwks create command failed: %v", err)
 				os.Exit(1)
@@ -78,7 +77,7 @@ func newJwksCreateCmd() *cobra.Command {
 	}
 
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
-	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
+	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks")
@@ -93,7 +92,7 @@ func newJwksCreateCmd() *cobra.Command {
 	return cmd
 }
 
-func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksCreateConfig) (interface{}, error) {
+func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *jwksCreateConfig) (interface{}, error) {
 	id := cmdConfig.jwksID
 	if id == "" {
 		id = uuid.NewString()
@@ -107,11 +106,11 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 		return nil, err
 	}
 	if cmdConfig.save {
-		dbClient, err := client.NewSQLClient(logger, dbConfig)
+		dsClient, err := getDatastoreClient(logger, datastoreConfig)
 		if err != nil {
-			return nil, errors.Wrap(err, "create sql client failed")
+			return nil, err
 		}
-		dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBClient(dbClient))
+		dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
 		if err != nil {
 			return nil, err
 		}
@@ -132,7 +131,7 @@ func runJwksCreate(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwks
 			KMSKeysetURI:  cmdConfig.kmsKeysetURI,
 			EncryptedJwks: base64.StdEncoding.EncodeToString(encryptedKeys),
 		}
-		err = dbClient.API().CreateJWKS(context.Background(), jwks)
+		err = dsClient.API().CreateJWKS(context.Background(), jwks)
 		if err != nil {
 			return nil, err
 		}

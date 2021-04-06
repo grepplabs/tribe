@@ -19,16 +19,16 @@ func init() {
 	rootCmd.AddCommand(toolsCmd)
 }
 
-func getDatastoreClient(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbConfig *config.DBConfig, minioConfig *config.MinioConfig) (client.Client, error) {
+func getDatastoreClient(logger log.Logger, datastoreConfig *config.DatastoreConfig) (client.Client, error) {
 	switch strings.ToLower(datastoreConfig.Provider) {
 	case "db":
-		dbClient, err := client.NewSQLClient(logger, dbConfig)
+		dbClient, err := client.NewSQLClient(logger, &datastoreConfig.DBConfig)
 		if err != nil {
 			return nil, errors.Wrap(err, "create sql client failed")
 		}
 		return dbClient, nil
 	case "minio":
-		minioClient, err := client.NewMinioClient(logger, minioConfig)
+		minioClient, err := client.NewMinioClient(logger, &datastoreConfig.MinioConfig)
 		if err != nil {
 			return nil, errors.Wrap(err, "create minio client failed")
 		}

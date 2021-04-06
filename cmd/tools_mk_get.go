@@ -21,8 +21,6 @@ type mkGetCmdConfig struct {
 func newMkGetCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	datastoreConfig := config.NewDatastoreConfig()
-	dbConfig := config.NewDBConfig()
-	minioConfig := config.NewMinioConfig()
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(mkGetCmdConfig)
 
@@ -39,7 +37,7 @@ func newMkGetCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("mk-get")
-			result, err := runMkGet(logger, datastoreConfig, dbConfig, minioConfig, cmdConfig)
+			result, err := runMkGet(logger, datastoreConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk get command failed: %v", err)
 				os.Exit(1)
@@ -57,8 +55,6 @@ func newMkGetCmd() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
 	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
-	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
-	cmd.Flags().AddFlagSet(minioConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
@@ -67,8 +63,8 @@ func newMkGetCmd() *cobra.Command {
 	return cmd
 }
 
-func runMkGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbConfig *config.DBConfig, minioConfig *config.MinioConfig, cmdConfig *mkGetCmdConfig) (*dtomodel.KMSKeyset, error) {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig, dbConfig, minioConfig)
+func runMkGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *mkGetCmdConfig) (*dtomodel.KMSKeyset, error) {
+	dsClient, err := getDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}

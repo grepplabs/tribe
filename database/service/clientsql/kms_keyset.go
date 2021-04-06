@@ -65,8 +65,8 @@ func (m kmsKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, lim
 		result = result.Limit(int(*limit))
 	}
 
-	var kmsKeysets []model.KMSKeyset
-	err := result.All(&kmsKeysets)
+	var list []model.KMSKeyset
+	err := result.All(&list)
 	if err != nil {
 		if errors.Is(err, db.ErrNoMoreRows) {
 			return nil, nil
@@ -78,7 +78,7 @@ func (m kmsKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, lim
 	if err != nil {
 		return nil, errors.Wrap(err, "list realms total entries")
 	}
-	return &model.KMSKeysetList{List: kmsKeysets, Page: model.Page{
+	return &model.KMSKeysetList{List: list, Page: model.Page{
 		Offset: offset,
 		Limit:  limit,
 		Total:  total,

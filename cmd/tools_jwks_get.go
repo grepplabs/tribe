@@ -37,7 +37,7 @@ func (c *jwksGetConfig) Validate() error {
 
 func newJwksGetCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
-	dbConfig := config.NewDBConfig()
+	datastoreConfig := config.NewDatastoreConfig()
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(jwksGetConfig)
 
@@ -57,7 +57,7 @@ func newJwksGetCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-get")
-			result, err := runJwksGet(logger, dbConfig, cmdConfig)
+			result, err := runJwksGet(logger, datastoreConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("jwks get command failed: %v", err)
 				os.Exit(1)
@@ -75,7 +75,7 @@ func newJwksGetCmd() *cobra.Command {
 	}
 
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
-	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
+	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks, JWKSID")
@@ -86,8 +86,12 @@ func newJwksGetCmd() *cobra.Command {
 	return cmd
 }
 
-func runJwksGet(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGetConfig) (interface{}, error) {
-	jwks, err := getJwks(logger, dbConfig, cmdConfig)
+func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *jwksGetConfig) (interface{}, error) {
+	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	if err != nil {
+		return nil, err
+	}
+	jwks, err := getJwks(dsClient, cmdConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +99,7 @@ func runJwksGet(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGet
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBConfig(dbConfig))
+	dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
 	if err != nil {
 		return nil, err
 	}
@@ -111,28 +115,24 @@ func runJwksGet(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGet
 	return &result, nil
 }
 
-func getJwks(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksGetConfig) (*model.JWKS, error) {
-	dbClient, err := client.NewSQLClient(logger, dbConfig)
-	if err != nil {
-		return nil, err
-	}
-	var jwks *model.JWKS
+func getJwks(dsClient client.Client, cmdConfig *jwksGetConfig) (*model.JWKS, error) {
 	if cmdConfig.jwksID != "" {
-		jwks, err = dbClient.API().GetJWKS(context.Background(), cmdConfig.jwksID)
+		jwks, err := dsClient.API().GetJWKS(context.Background(), cmdConfig.jwksID)
 		if err != nil {
 			return nil, err
 		}
 		if jwks == nil {
 			return nil, errors.Errorf("not found JWKS ID: %s", cmdConfig.jwksID)
 		}
+		return jwks, nil
 	} else {
-		jwks, err = dbClient.API().GetJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
+		jwks, err := dsClient.API().GetJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
 		if err != nil {
 			return nil, err
 		}
 		if jwks == nil {
 			return nil, errors.Errorf("not found JWKS kid, sig: %s, %s", cmdConfig.kid, cmdConfig.use)
 		}
+		return jwks, nil
 	}
-	return jwks, nil
 }

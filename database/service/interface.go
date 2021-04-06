@@ -17,4 +17,5 @@ type API interface {
 	GetJWKSByKidUse(ctx context.Context, kid string, use string) (*model.JWKS, error)
 	DeleteJWKS(ctx context.Context, id string) error
 	DeleteJWKSByKidUse(ctx context.Context, kid string, use string) error
+	ListJWKS(ctx context.Context, offset *int64, limit *int64) (*model.JWKSList, error)
 }

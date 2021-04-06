@@ -12,10 +12,10 @@ import (
 )
 
 func init() {
-	mkCmd.AddCommand(newMkListCmd())
+	jwksCmd.AddCommand(newJwksListCmd())
 }
 
-func newMkListCmd() *cobra.Command {
+func newJwksListCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	datastoreConfig := config.NewDatastoreConfig()
 	outputConfig := config.NewOutputConfig()
@@ -23,7 +23,7 @@ func newMkListCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "List master key",
+		Short: "List JWKS",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if err := outputConfig.Validate(); err != nil {
 				return err
@@ -33,10 +33,10 @@ func newMkListCmd() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			producer := outputConfig.MustGetProducer()
 
-			logger := log.NewLogger(logConfig.Configuration).WithName("mk-list")
-			result, err := runMkList(logger, datastoreConfig, paginationConfig)
+			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-list")
+			result, err := runJwksList(logger, datastoreConfig, paginationConfig)
 			if err != nil {
-				log.Errorf("mk list command failed: %v", err)
+				log.Errorf("jwks list command failed: %v", err)
 				os.Exit(1)
 			}
 			if result != nil {
@@ -56,10 +56,10 @@ func newMkListCmd() *cobra.Command {
 	return cmd
 }
 
-func runMkList(logger log.Logger, datastoreConfig *config.DatastoreConfig, paginationConfig *config.PaginationConfig) (*dtomodel.KMSKeysetList, error) {
+func runJwksList(logger log.Logger, datastoreConfig *config.DatastoreConfig, paginationConfig *config.PaginationConfig) (*dtomodel.JWKSList, error) {
 	dsClient, err := getDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}
-	return dsClient.API().ListKMSKeysets(context.Background(), utils.Int64(paginationConfig.Offset), utils.Int64(paginationConfig.Limit))
+	return dsClient.API().ListJWKS(context.Background(), utils.Int64(paginationConfig.Offset), utils.Int64(paginationConfig.Limit))
 }

@@ -32,8 +32,6 @@ func (c *mkCreateCmdConfig) Validate() error {
 func newMkCreateCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	datastoreConfig := config.NewDatastoreConfig()
-	dbConfig := config.NewDBConfig()
-	minioConfig := config.NewMinioConfig()
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(mkCreateCmdConfig)
 
@@ -53,7 +51,7 @@ func newMkCreateCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("mk-create")
-			result, err := runMkCreate(logger, datastoreConfig, dbConfig, minioConfig, cmdConfig)
+			result, err := runMkCreate(logger, datastoreConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk create command failed: %v", err)
 				os.Exit(1)
@@ -67,8 +65,6 @@ func newMkCreateCmd() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
 	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
-	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
-	cmd.Flags().AddFlagSet(minioConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
@@ -79,7 +75,7 @@ func newMkCreateCmd() *cobra.Command {
 	return cmd
 }
 
-func runMkCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbConfig *config.DBConfig, minioConfig *config.MinioConfig, cmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
+func runMkCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *mkCreateCmdConfig) (*dtomodel.KMSKeyset, error) {
 	id := cmdConfig.keysetID
 	if id == "" {
 		id = uuid.NewString()
@@ -94,7 +90,7 @@ func runMkCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbC
 		return nil, errors.Wrap(err, "encrypt master keyset failed")
 	}
 
-	dsClient, err := getDatastoreClient(logger, datastoreConfig, dbConfig, minioConfig)
+	dsClient, err := getDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}

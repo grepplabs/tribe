@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"github.com/grepplabs/tribe/config"
-	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -30,7 +29,7 @@ func (c *jwksDeleteConfig) Validate() error {
 
 func newJwksDeleteCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
-	dbConfig := config.NewDBConfig()
+	datastoreConfig := config.NewDatastoreConfig()
 	cmdConfig := new(jwksDeleteConfig)
 
 	cmd := &cobra.Command{
@@ -44,7 +43,7 @@ func newJwksDeleteCmd() *cobra.Command {
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-delete")
-			err := runJwksDelete(logger, dbConfig, cmdConfig)
+			err := runJwksDelete(logger, datastoreConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("jwks delete command failed: %v", err)
 				os.Exit(1)
@@ -53,7 +52,7 @@ func newJwksDeleteCmd() *cobra.Command {
 	}
 
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
-	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
+	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks, JWKSID")
 	cmd.Flags().StringVar(&cmdConfig.use, "use", "sig", "How the key is meant to be used. One of: [sig, enc]")
@@ -62,14 +61,14 @@ func newJwksDeleteCmd() *cobra.Command {
 	return cmd
 }
 
-func runJwksDelete(logger log.Logger, dbConfig *config.DBConfig, cmdConfig *jwksDeleteConfig) error {
-	dbClient, err := client.NewSQLClient(logger, dbConfig)
+func runJwksDelete(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *jwksDeleteConfig) error {
+	dsClient, err := getDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return err
 	}
 	if cmdConfig.jwksID != "" {
-		return dbClient.API().DeleteJWKS(context.Background(), cmdConfig.jwksID)
+		return dsClient.API().DeleteJWKS(context.Background(), cmdConfig.jwksID)
 	} else {
-		return dbClient.API().DeleteJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
+		return dsClient.API().DeleteJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
 	}
 }

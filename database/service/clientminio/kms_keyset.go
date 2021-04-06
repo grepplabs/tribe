@@ -20,8 +20,8 @@ func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	if kmsKeyset == nil {
 		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
 	}
-	objectName := m.getObjectName(kmsKeyset.ID)
-	exists, err := m.Exists(ctx, objectName)
+	objectName := m.objectNameForID(kmsKeyset.ID)
+	exists, err := m.existsObjectWithName(ctx, objectName)
 	if err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (m kmsKeysetManager) GetKMSKeyset(ctx context.Context, keysetID string) (*m
 	if keysetID == "" {
 		return nil, service.ErrIllegalArgument{Reason: "Input parameter keysetID is missing"}
 	}
-	return m.getObject(ctx, m.getObjectName(keysetID))
+	return m.getObject(ctx, m.objectNameForID(keysetID))
 }
 
 func (m kmsKeysetManager) getObject(ctx context.Context, objectName string) (*model.KMSKeyset, error) {
@@ -63,7 +63,7 @@ func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) 
 	if keysetID == "" {
 		return service.ErrIllegalArgument{Reason: "Input parameter realmID is missing"}
 	}
-	objectName := m.getObjectName(keysetID)
+	objectName := m.objectNameForID(keysetID)
 	err := m.mc.RemoveObject(ctx, m.bucketName, objectName, minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "RemoveObject failed")
@@ -75,7 +75,7 @@ func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	if kmsKeyset == nil {
 		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
 	}
-	objectName := m.getObjectName(kmsKeyset.ID)
+	objectName := m.objectNameForID(kmsKeyset.ID)
 	data, err := json.Marshal(kmsKeyset)
 	if err != nil {
 		return errors.Wrap(err, "Marshal kms keyset failed")
@@ -86,37 +86,38 @@ func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	}
 	return nil
 }
+
 func (m kmsKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, limit *int64) (*model.KMSKeysetList, error) {
 	var maxKeys int
 	if limit != nil && *limit > 0 {
 		// limit 0 all elements
 		maxKeys = int(*limit)
 	}
-	kmsKeysets := make([]model.KMSKeyset, 0)
-	for object := range m.mc.ListObjects(ctx, m.bucketName, minio.ListObjectsOptions{Prefix: m.getObjectPrefix(), Recursive: true, MaxKeys: maxKeys}) {
+	list := make([]model.KMSKeyset, 0)
+	for object := range m.mc.ListObjects(ctx, m.bucketName, minio.ListObjectsOptions{Prefix: m.objectPrefix(), Recursive: true, MaxKeys: maxKeys}) {
 		kmsKeyset, err := m.getObject(ctx, object.Key)
 		if err != nil {
 			return nil, err
 		}
-		kmsKeysets = append(kmsKeysets, *kmsKeyset)
+		list = append(list, *kmsKeyset)
 	}
-	return &model.KMSKeysetList{List: kmsKeysets, Page: model.Page{
+	return &model.KMSKeysetList{List: list, Page: model.Page{
 		Offset: nil, // TODO: offset was not used
 		Limit:  limit,
 		Total:  0, // TODO: Total is unknown
 	}}, nil
 }
 
-func (m kmsKeysetManager) getObjectName(id string) string {
-	return fmt.Sprintf("%s%s", m.getObjectPrefix(), id)
+func (m kmsKeysetManager) objectNameForID(id string) string {
+	return fmt.Sprintf("%s%s", m.objectPrefix(), id)
 }
 
-func (m kmsKeysetManager) getObjectPrefix() string {
+func (m kmsKeysetManager) objectPrefix() string {
 	var kmsKeyset model.KMSKeyset
 	return fmt.Sprintf("%s/", kmsKeyset.TableName())
 }
 
-func (m kmsKeysetManager) Exists(ctx context.Context, objectName string) (bool, error) {
+func (m kmsKeysetManager) existsObjectWithName(ctx context.Context, objectName string) (bool, error) {
 	_, err := m.mc.StatObject(ctx, m.bucketName, objectName, minio.StatObjectOptions{})
 	if err != nil {
 		errResponse := minio.ToErrorResponse(err)

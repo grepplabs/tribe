@@ -20,8 +20,6 @@ type mkDeleteCmdConfig struct {
 func newMkDeleteCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	datastoreConfig := config.NewDatastoreConfig()
-	dbConfig := config.NewDBConfig()
-	minioConfig := config.NewMinioConfig()
 	cmdConfig := new(mkDeleteCmdConfig)
 
 	cmd := &cobra.Command{
@@ -29,7 +27,7 @@ func newMkDeleteCmd() *cobra.Command {
 		Short: "Delete master key",
 		Run: func(cmd *cobra.Command, args []string) {
 			logger := log.NewLogger(logConfig.Configuration).WithName("mk-delete")
-			err := runMkDelete(logger, datastoreConfig, dbConfig, minioConfig, cmdConfig)
+			err := runMkDelete(logger, datastoreConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("mk delete command failed: %v", err)
 				os.Exit(1)
@@ -38,17 +36,14 @@ func newMkDeleteCmd() *cobra.Command {
 	}
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
 	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
-	cmd.Flags().AddFlagSet(dbConfig.FlagSet())
-	cmd.Flags().AddFlagSet(minioConfig.FlagSet())
-
 	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
 	_ = cmd.MarkFlagRequired("keyset-id")
 
 	return cmd
 }
 
-func runMkDelete(logger log.Logger, datastoreConfig *config.DatastoreConfig, dbConfig *config.DBConfig, minioConfig *config.MinioConfig, cmdConfig *mkDeleteCmdConfig) error {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig, dbConfig, minioConfig)
+func runMkDelete(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *mkDeleteCmdConfig) error {
+	dsClient, err := getDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return err
 	}
