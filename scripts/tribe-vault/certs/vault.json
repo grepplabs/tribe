@@ -1,0 +1,22 @@
+{
+  "CN": "vault",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "DE",
+      "L": "Bonn",
+      "O": "Tribe",
+      "OU": "Tribe Host",
+      "ST": "NRW"
+    }
+  ],
+  "hosts": [
+    "vault",
+    "localhost",
+    "0.0.0.0",
+    "127.0.0.1"
+  ]
+}

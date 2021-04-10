@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/google/tink/go/core/registry"
 	"github.com/google/tink/go/keyset"
 	"github.com/google/tink/go/tink"
 	"github.com/grepplabs/tribe/config"
@@ -14,31 +15,48 @@ import (
 	"strings"
 )
 
+const (
+	dbPrefix = "db://"
+)
+
+var _ registry.KMSClient = (*client)(nil)
+
 type client struct {
-	logger   log.Logger
-	dbClient dbClient.Client
-	dbConfig *config.DBConfig
+	keyURIPrefix string
+	masterSecret string
+	logger       log.Logger
+	dbClient     dbClient.Client
+	dbConfig     *config.DBConfig
 }
 
-func (c *client) GetAEAD(keyURI string, masterSecret string) tink.AEAD {
+// Implements KMSClient Supported methods
+func (c *client) Supported(keyURI string) bool {
+	return strings.HasPrefix(keyURI, c.keyURIPrefix)
+}
+
+// Implements KMSClient GetAEAD methods
+func (c *client) GetAEAD(keyURI string) (tink.AEAD, error) {
+	mk, err := c.getMasterKey(keyURI, c.masterSecret)
+	if err != nil {
+		return nil, err
+	}
 	return NewAEAD(func() (*keyset.Handle, error) {
-		// add some caching
-		mk, err := c.getMasterKey(keyURI, masterSecret)
-		if err != nil {
-			return nil, err
-		}
 		return mk.GetKeyset(), nil
-	})
+	}), nil
 }
 
 func NewClient(options ...Option) (*client, error) {
 	c := &client{
-		logger: log.DefaultLogger.WithName("dbkms-client"),
+		keyURIPrefix: dbPrefix,
+		logger:       log.DefaultLogger.WithName("dbkms-client"),
 	}
 	for _, option := range options {
 		if err := option(c); err != nil {
 			return nil, err
 		}
+	}
+	if c.masterSecret == "" {
+		return nil, errors.New("masterSecret must not be empty")
 	}
 	if c.dbClient == nil {
 		if c.dbConfig == nil {
@@ -57,11 +75,10 @@ func (c *client) getMasterKey(keyURI string, masterSecret string) (masterkey.Mas
 	if masterSecret == "" {
 		return nil, errors.Errorf("master-secret is required for kms-keyset-uri: %s", keyURI)
 	}
-	const dbPrefix = "db://"
-	if !strings.HasPrefix(strings.ToLower(keyURI), dbPrefix) {
-		return nil, fmt.Errorf("uriPrefix must start with %s, but got %s", dbPrefix, keyURI)
+	if !strings.HasPrefix(strings.ToLower(keyURI), c.keyURIPrefix) {
+		return nil, fmt.Errorf("uriPrefix must start with %s, but got %s", c.keyURIPrefix, keyURI)
 	}
-	keysetID := strings.TrimPrefix(keyURI, dbPrefix)
+	keysetID := strings.TrimPrefix(keyURI, c.keyURIPrefix)
 	ks, err := c.dbClient.API().GetKMSKeyset(context.Background(), keysetID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "get kms keyset failed: %s", keysetID)

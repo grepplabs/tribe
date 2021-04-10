@@ -1,0 +1,16 @@
+{
+  "CN": "Tribe Root CA",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "DE",
+      "L": "Bonn",
+      "O": "Tribe",
+      "OU": "Tribe Root CA",
+      "ST": "NRW"
+    }
+  ]
+}

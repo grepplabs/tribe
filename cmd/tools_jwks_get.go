@@ -99,11 +99,15 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdC
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
+	dbkmsClient, err := dbkms.NewClient(dbkms.WithMasterSecret(cmdConfig.masterSecret), dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
 	if err != nil {
 		return nil, err
 	}
-	decryptedKeys, err := dbkmsClient.GetAEAD(jwks.KMSKeysetURI, cmdConfig.masterSecret).Decrypt(encryptedKeys, []byte{})
+	aead, err := dbkmsClient.GetAEAD(jwks.KMSKeysetURI)
+	if err != nil {
+		return nil, err
+	}
+	decryptedKeys, err := aead.Decrypt(encryptedKeys, []byte{})
 	if err != nil {
 		return nil, errors.Wrap(err, "AEAD keys decryption failed")
 	}

@@ -110,7 +110,7 @@ func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, c
 		if err != nil {
 			return nil, err
 		}
-		dbkmsClient, err := dbkms.NewClient(dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
+		dbkmsClient, err := dbkms.NewClient(dbkms.WithMasterSecret(cmdConfig.masterSecret), dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
 		if err != nil {
 			return nil, err
 		}
@@ -118,7 +118,11 @@ func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, c
 		if err != nil {
 			return nil, err
 		}
-		encryptedKeys, err := dbkmsClient.GetAEAD(cmdConfig.kmsKeysetURI, cmdConfig.masterSecret).Encrypt(bytes, []byte{})
+		aead, err := dbkmsClient.GetAEAD(cmdConfig.kmsKeysetURI)
+		if err != nil {
+			return nil, errors.Wrap(err, "Get AEAD failed")
+		}
+		encryptedKeys, err := aead.Encrypt(bytes, []byte{})
 		if err != nil {
 			return nil, errors.Wrap(err, "AEAD keys encryption failed")
 		}

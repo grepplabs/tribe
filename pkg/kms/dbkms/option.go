@@ -28,3 +28,10 @@ func WithDBConfig(config *config.DBConfig) Option {
 		return nil
 	}
 }
+
+func WithMasterSecret(masterSecret string) Option {
+	return func(c *client) error {
+		c.masterSecret = masterSecret
+		return nil
+	}
+}

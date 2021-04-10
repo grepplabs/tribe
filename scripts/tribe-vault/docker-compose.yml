@@ -1,0 +1,25 @@
+version: '3'
+services:
+  vault:
+    image: vault:1.7.0
+    restart: on-failure:10
+    ports:
+      - "8201:8201"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: 'tribe-root-token'
+      VAULT_LOCAL_CONFIG: '{"listener": [{"tcp":{"address": "0.0.0.0:8201", "tls_disable":"0", "tls_cert_file":"/data/certs/vault-server.pem", "tls_key_file":"/data/certs/vault-server-key.pem"}}], "default_lease_ttl": "168h", "max_lease_ttl": "720h"}, "ui": true}'
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ${PWD}/certs:/data/certs
+    healthcheck:
+      retries: 5
+    command: server -dev
+  vault-setup:
+    image: vault:1.7.0
+    depends_on:
+      - vault
+    environment:
+      VAULT_ADDR: 'https://vault:8201'
+    restart: "no"
+    entrypoint: [ "/bin/sh", "-c", "sleep 5 && vault login -tls-skip-verify=true token=tribe-root-token && vault secrets enable -tls-skip-verify=true transit" ]
