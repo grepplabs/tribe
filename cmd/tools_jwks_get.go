@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"github.com/google/tink/go/core/registry"
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/database/model"
@@ -99,11 +100,15 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdC
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	dbkmsClient, err := dbkms.NewClient(dbkms.WithMasterSecret(cmdConfig.masterSecret), dbkms.WithLogger(logger), dbkms.WithDBClient(dsClient))
+	err = dbkms.RegisterKMSClient(logger, dsClient, cmdConfig.masterSecret)
 	if err != nil {
 		return nil, err
 	}
-	aead, err := dbkmsClient.GetAEAD(jwks.KMSKeysetURI)
+	kmsClient, err := registry.GetKMSClient(jwks.KMSKeyURI)
+	if err != nil {
+		return nil, err
+	}
+	aead, err := kmsClient.GetAEAD(jwks.KMSKeyURI)
 	if err != nil {
 		return nil, err
 	}

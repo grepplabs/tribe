@@ -8,7 +8,7 @@ type JWKS struct {
 	Kid           string    `db:"kid" json:"kid"`
 	Alg           string    `db:"alg" json:"alg"`
 	Use           string    `db:"use" json:"use"`
-	KMSKeysetURI  string    `db:"kms_keyset_uri" json:"kms_keyset_uri"`
+	KMSKeyURI     string    `db:"kms_key_uri" json:"kms_key_uri"`
 	EncryptedJwks string    `db:"encrypted_jwks" json:"encrypted_jwks"`
 	Description   string    `db:"description" json:"description"`
 }

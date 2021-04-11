@@ -96,3 +96,12 @@ func (c *client) getMasterKey(keyURI string, masterSecret string) (masterkey.Mas
 	}
 	return mk, nil
 }
+
+func RegisterKMSClient(logger log.Logger, dsClient dbClient.Client, masterSecret string) error {
+	dbkmsClient, err := NewClient(WithMasterSecret(masterSecret), WithLogger(logger), WithDBClient(dsClient))
+	if err != nil {
+		return err
+	}
+	registry.RegisterKMSClient(dbkmsClient)
+	return nil
+}

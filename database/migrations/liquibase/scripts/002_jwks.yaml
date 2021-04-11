@@ -33,7 +33,7 @@ databaseChangeLog:
             constraints:
               nullable: false
         - column:
-            name:  kms_keyset_uri
+            name:  kms_key_uri
             type:  varchar(255)
             constraints:
               nullable: false

@@ -72,7 +72,7 @@ func (m jwksManager) DeleteJWKSByKidUse(ctx context.Context, kid string, use str
 }
 
 func (m jwksManager) ListJWKS(ctx context.Context, offset *int64, limit *int64) (*model.JWKSList, error) {
-	var jwks model.KMSKeyset
+	var jwks model.JWKS
 	result := m.dbs.WithContext(ctx).Collection(jwks.TableName()).Find().OrderBy("created_at")
 	if offset != nil && *offset > 0 {
 		result = result.Offset(int(*offset))

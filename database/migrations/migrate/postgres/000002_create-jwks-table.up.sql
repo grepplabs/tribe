@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS tribe_jwks
     kid              varchar(255)  NOT NULL,
     alg              varchar(32)   NOT NULL,
     use              varchar(32)   NOT NULL,
-    kms_keyset_uri   varchar(255)  NOT NULL,
+    kms_key_uri      varchar(255)  NOT NULL,
     encrypted_jwks   TEXT NOT NULL,
     description      varchar(255)  NULL,
     CONSTRAINT pk_tribe_jwks PRIMARY KEY (id)
