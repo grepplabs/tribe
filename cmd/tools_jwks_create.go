@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/google/tink/go/core/registry"
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/model"
 	"github.com/grepplabs/tribe/pkg/jwk"
-	"github.com/grepplabs/tribe/pkg/kms/dbkms"
 	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -29,22 +27,17 @@ type jwksCreateConfig struct {
 	kid string
 
 	save         bool
-	kmsKeyURI    string
 	masterSecret string
 }
 
 func (c *jwksCreateConfig) Validate() error {
-	if c.save {
-		if c.kmsKeyURI == "" {
-			return errors.New("kms-key-uri is required when save is enabled")
-		}
-	}
 	return nil
 }
 
 func newJwksCreateCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	datastoreConfig := config.NewDatastoreConfig()
+	kmsConfig := config.NewKMSConfig(datastoreConfig)
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(jwksCreateConfig)
 
@@ -64,7 +57,7 @@ func newJwksCreateCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-create")
-			result, err := runJwksCreate(logger, datastoreConfig, cmdConfig)
+			result, err := runJwksCreate(logger, datastoreConfig, kmsConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("jwks create command failed: %v", err)
 				os.Exit(1)
@@ -79,6 +72,7 @@ func newJwksCreateCmd() *cobra.Command {
 
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
 	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
+	cmd.Flags().AddFlagSet(kmsConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks")
@@ -87,13 +81,12 @@ func newJwksCreateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&cmdConfig.kid, "kid", "", "Unique key identifier. The Key ID is generated if not specified.")
 
 	cmd.Flags().BoolVar(&cmdConfig.save, "save", true, "Save the JWKS in persistent store")
-	cmd.Flags().StringVar(&cmdConfig.kmsKeyURI, "kms-key-uri", "", "URI of the KMS key to use to encrypt the JWKS")
 	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "KMS master secret")
 
 	return cmd
 }
 
-func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *jwksCreateConfig) (interface{}, error) {
+func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsConfig *config.KMSConfig, cmdConfig *jwksCreateConfig) (interface{}, error) {
 	id := cmdConfig.jwksID
 	if id == "" {
 		id = uuid.NewString()
@@ -107,19 +100,15 @@ func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, c
 		return nil, err
 	}
 	if cmdConfig.save {
-		dsClient, err := getDatastoreClient(logger, datastoreConfig)
+		dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 		if err != nil {
 			return nil, err
 		}
-		err = dbkms.RegisterKMSClient(logger, dsClient, cmdConfig.masterSecret)
+		kmsProvider, err := NewKMSProvider(logger, kmsConfig, cmdConfig.masterSecret)
 		if err != nil {
 			return nil, err
 		}
-		kmsClient, err := registry.GetKMSClient(cmdConfig.kmsKeyURI)
-		if err != nil {
-			return nil, err
-		}
-		aead, err := kmsClient.GetAEAD(cmdConfig.kmsKeyURI)
+		aead, keyURI, err := kmsProvider.NewAEAD(id)
 		if err != nil {
 			return nil, errors.Wrap(err, "Get AEAD failed")
 		}
@@ -137,7 +126,7 @@ func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, c
 			Kid:           kid,
 			Alg:           cmdConfig.alg,
 			Use:           cmdConfig.use,
-			KMSKeyURI:     cmdConfig.kmsKeyURI,
+			KMSKeyURI:     keyURI,
 			EncryptedJwks: base64.StdEncoding.EncodeToString(encryptedKeys),
 		}
 		err = dsClient.API().CreateJWKS(context.Background(), jwks)

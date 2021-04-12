@@ -57,7 +57,7 @@ func newMkListCmd() *cobra.Command {
 }
 
 func runMkList(logger log.Logger, datastoreConfig *config.DatastoreConfig, paginationConfig *config.PaginationConfig) (*dtomodel.KMSKeysetList, error) {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}

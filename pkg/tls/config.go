@@ -47,28 +47,33 @@ func NewServerConfig(cert, key, clientCA string) (*tls.Config, error) {
 	return tlsCfg, nil
 }
 
-func NewClientConfig(cert, key, caCert, serverName string) (*tls.Config, error) {
+func NewClientConfig(cert, key, caCert, serverName string, useSystemCertPool bool, insecureSkipVerify bool) (*tls.Config, error) {
 	var certPool *x509.CertPool
+
 	if caCert != "" {
 		caPEM, err := ioutil.ReadFile(caCert)
 		if err != nil {
 			return nil, errors.Wrap(err, "reading client CA")
 		}
-
-		certPool = x509.NewCertPool()
+		if useSystemCertPool {
+			certPool, _ = x509.SystemCertPool()
+		}
+		if certPool == nil {
+			certPool = x509.NewCertPool()
+		}
 		if !certPool.AppendCertsFromPEM(caPEM) {
 			return nil, errors.Wrap(err, "building client CA")
 		}
-	} else {
+	} else if useSystemCertPool {
 		var err error
 		certPool, err = x509.SystemCertPool()
 		if err != nil {
 			return nil, errors.Wrap(err, "reading system certificate pool")
 		}
 	}
-
 	tlsCfg := &tls.Config{
-		RootCAs: certPool,
+		RootCAs:            certPool,
+		InsecureSkipVerify: insecureSkipVerify,
 	}
 
 	if serverName != "" {

@@ -35,3 +35,10 @@ func WithMasterSecret(masterSecret string) Option {
 		return nil
 	}
 }
+
+func WithKeyURIPrefix(keyURIPrefix string) Option {
+	return func(c *client) error {
+		c.keyURIPrefix = keyURIPrefix
+		return nil
+	}
+}

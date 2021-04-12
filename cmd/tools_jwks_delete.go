@@ -62,7 +62,7 @@ func newJwksDeleteCmd() *cobra.Command {
 }
 
 func runJwksDelete(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *jwksDeleteConfig) error {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return err
 	}

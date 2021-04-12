@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/google/tink/go/core/registry"
 	"github.com/grepplabs/tribe/config"
 	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/database/model"
-	"github.com/grepplabs/tribe/pkg/kms/dbkms"
 	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -39,6 +37,7 @@ func (c *jwksGetConfig) Validate() error {
 func newJwksGetCmd() *cobra.Command {
 	logConfig := config.NewLogConfig()
 	datastoreConfig := config.NewDatastoreConfig()
+	kmsConfig := config.NewKMSConfig(datastoreConfig)
 	outputConfig := config.NewOutputConfig()
 	cmdConfig := new(jwksGetConfig)
 
@@ -58,7 +57,7 @@ func newJwksGetCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-get")
-			result, err := runJwksGet(logger, datastoreConfig, cmdConfig)
+			result, err := runJwksGet(logger, datastoreConfig, kmsConfig, cmdConfig)
 			if err != nil {
 				log.Errorf("jwks get command failed: %v", err)
 				os.Exit(1)
@@ -77,6 +76,7 @@ func newJwksGetCmd() *cobra.Command {
 
 	cmd.Flags().AddFlagSet(logConfig.FlagSet())
 	cmd.Flags().AddFlagSet(datastoreConfig.FlagSet())
+	cmd.Flags().AddFlagSet(kmsConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
 	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks, JWKSID")
@@ -87,8 +87,8 @@ func newJwksGetCmd() *cobra.Command {
 	return cmd
 }
 
-func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *jwksGetConfig) (interface{}, error) {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsConfig *config.KMSConfig, cmdConfig *jwksGetConfig) (interface{}, error) {
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -100,15 +100,11 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdC
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	err = dbkms.RegisterKMSClient(logger, dsClient, cmdConfig.masterSecret)
+	kmsProvider, err := NewKMSProvider(logger, kmsConfig, cmdConfig.masterSecret)
 	if err != nil {
 		return nil, err
 	}
-	kmsClient, err := registry.GetKMSClient(jwks.KMSKeyURI)
-	if err != nil {
-		return nil, err
-	}
-	aead, err := kmsClient.GetAEAD(jwks.KMSKeyURI)
+	aead, err := kmsProvider.AEADFromKeyURI(jwks.KMSKeyURI)
 	if err != nil {
 		return nil, err
 	}

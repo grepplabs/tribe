@@ -43,7 +43,7 @@ func newMkDeleteCmd() *cobra.Command {
 }
 
 func runMkDelete(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *mkDeleteCmdConfig) error {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return err
 	}

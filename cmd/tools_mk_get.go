@@ -64,7 +64,7 @@ func newMkGetCmd() *cobra.Command {
 }
 
 func runMkGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmdConfig *mkGetCmdConfig) (*dtomodel.KMSKeyset, error) {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}

@@ -12,11 +12,13 @@ import (
 	"github.com/grepplabs/tribe/pkg/kms/masterkey"
 	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
+	"net/url"
 	"strings"
 )
 
 const (
-	dbPrefix = "db://"
+	dbPrefix       = "db://"
+	keyKmsKeysetId = "kms-keyset-id"
 )
 
 var _ registry.KMSClient = (*client)(nil)
@@ -55,6 +57,9 @@ func NewClient(options ...Option) (*client, error) {
 			return nil, err
 		}
 	}
+	if !strings.HasPrefix(strings.ToLower(c.keyURIPrefix), dbPrefix) {
+		return nil, fmt.Errorf("keyURIPrefix must start with %s, but got %s", dbPrefix, c.keyURIPrefix)
+	}
 	if c.masterSecret == "" {
 		return nil, errors.New("masterSecret must not be empty")
 	}
@@ -73,12 +78,19 @@ func NewClient(options ...Option) (*client, error) {
 
 func (c *client) getMasterKey(keyURI string, masterSecret string) (masterkey.MasterKeyset, error) {
 	if masterSecret == "" {
-		return nil, errors.Errorf("master-secret is required for kms-keyset-uri: %s", keyURI)
+		return nil, errors.Errorf("master-secret is required for key-uri: %s", keyURI)
 	}
 	if !strings.HasPrefix(strings.ToLower(keyURI), c.keyURIPrefix) {
 		return nil, fmt.Errorf("uriPrefix must start with %s, but got %s", c.keyURIPrefix, keyURI)
 	}
-	keysetID := strings.TrimPrefix(keyURI, c.keyURIPrefix)
+	u, err := url.Parse(keyURI)
+	if err != nil {
+		return nil, errors.Wrapf(err, "url parse failed: %s", keyURI)
+	}
+	keysetID := u.Query().Get(keyKmsKeysetId)
+	if keysetID == "" {
+		return nil, errors.Errorf("query param %s not found: %s", keyKmsKeysetId, keysetID)
+	}
 	ks, err := c.dbClient.API().GetKMSKeyset(context.Background(), keysetID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "get kms keyset failed: %s", keysetID)
@@ -97,8 +109,8 @@ func (c *client) getMasterKey(keyURI string, masterSecret string) (masterkey.Mas
 	return mk, nil
 }
 
-func RegisterKMSClient(logger log.Logger, dsClient dbClient.Client, masterSecret string) error {
-	dbkmsClient, err := NewClient(WithMasterSecret(masterSecret), WithLogger(logger), WithDBClient(dsClient))
+func RegisterKMSClient(logger log.Logger, dsClient dbClient.Client, masterSecret string, provider string) error {
+	dbkmsClient, err := NewClient(WithMasterSecret(masterSecret), WithLogger(logger), WithDBClient(dsClient), WithKeyURIPrefix(fmt.Sprintf("%s%s", dbPrefix, provider)))
 	if err != nil {
 		return err
 	}

@@ -57,7 +57,7 @@ func newJwksListCmd() *cobra.Command {
 }
 
 func runJwksList(logger log.Logger, datastoreConfig *config.DatastoreConfig, paginationConfig *config.PaginationConfig) (*dtomodel.JWKSList, error) {
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}

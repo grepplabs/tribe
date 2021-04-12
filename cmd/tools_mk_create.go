@@ -90,7 +90,7 @@ func runMkCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, cmd
 		return nil, errors.Wrap(err, "encrypt master keyset failed")
 	}
 
-	dsClient, err := getDatastoreClient(logger, datastoreConfig)
+	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
 	if err != nil {
 		return nil, err
 	}
