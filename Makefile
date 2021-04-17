@@ -55,14 +55,13 @@ postgres-up: ## Start test postgres
 	cd $(ROOT_DIR)/scripts/tribe-postgres && docker-compose up
 
 # https://github.com/golang-migrate/migrate
-MIGRATIONS_PATH := $(ROOT_DIR)/database/migrations/migrate
+MIGRATIONS_PATH := $(ROOT_DIR)/database/migrations
 migrate: ## Database migration using migrate tool
 	migrate -path $(MIGRATIONS_PATH)/postgres -database postgres://tribe:secret@localhost:5432/tribe?sslmode=disable up
 
-LIQUIBASE_PATH  := $(ROOT_DIR)/database/migrations/liquibase
 liquibase: ## Database migration using liquibase
 	docker run --network host --rm -u $(shell id -u):$(shell id -g) \
-		-v $(LIQUIBASE_PATH):/liquibase/changelog liquibase/liquibase:4.2 \
+		-v $(MIGRATIONS_PATH):/liquibase/changelog liquibase/liquibase:4.2 \
 		--driver=org.postgresql.Driver --url="jdbc:postgresql://localhost:5432/tribe" \
 		--changeLogFile=changelog/changelog.yaml --username=tribe --password=secret \
 		update

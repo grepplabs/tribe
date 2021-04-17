@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: "Michal Budzyn"
+      failOnError: true
+      runInTransaction: true
+      logicalFilePath: changeset/002_jwks.yaml
+      changes:
+        - sqlFile:
+            path: postgres/000002_create-jwks-table.up.sql
+            encoding: utf8

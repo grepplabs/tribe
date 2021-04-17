@@ -23,8 +23,6 @@ type jwksGetConfig struct {
 
 	use string
 	kid string
-
-	masterSecret string
 }
 
 func (c *jwksGetConfig) Validate() error {
@@ -82,7 +80,6 @@ func newJwksGetCmd() *cobra.Command {
 	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks, JWKSID")
 	cmd.Flags().StringVar(&cmdConfig.use, "use", "sig", "How the key is meant to be used. One of: [sig, enc]")
 	cmd.Flags().StringVar(&cmdConfig.kid, "kid", "", "Unique key identifier. The Key ID is generated if not specified.")
-	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "KMS master secret")
 
 	return cmd
 }
@@ -100,7 +97,7 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsC
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	kmsProvider, err := NewKMSProvider(logger, kmsConfig, cmdConfig.masterSecret)
+	kmsProvider, err := NewKMSProvider(logger, kmsConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -122,14 +119,7 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsC
 
 func getJwks(dsClient client.Client, cmdConfig *jwksGetConfig) (*model.JWKS, error) {
 	if cmdConfig.jwksID != "" {
-		jwks, err := dsClient.API().GetJWKS(context.Background(), cmdConfig.jwksID)
-		if err != nil {
-			return nil, err
-		}
-		if jwks == nil {
-			return nil, errors.Errorf("not found JWKS ID: %s", cmdConfig.jwksID)
-		}
-		return jwks, nil
+		return getJwksByID(dsClient, cmdConfig.jwksID)
 	} else {
 		jwks, err := dsClient.API().GetJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
 		if err != nil {
@@ -140,4 +130,15 @@ func getJwks(dsClient client.Client, cmdConfig *jwksGetConfig) (*model.JWKS, err
 		}
 		return jwks, nil
 	}
+}
+
+func getJwksByID(dsClient client.Client, jwksID string) (*model.JWKS, error) {
+	jwks, err := dsClient.API().GetJWKS(context.Background(), jwksID)
+	if err != nil {
+		return nil, err
+	}
+	if jwks == nil {
+		return nil, errors.Errorf("not found JWKS ID: %s", jwksID)
+	}
+	return jwks, nil
 }

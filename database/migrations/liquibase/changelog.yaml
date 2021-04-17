@@ -1,5 +1,0 @@
-databaseChangeLog:
-- include:
-    file: scripts/001_kms_keyset.yaml
-- include:
-    file: scripts/002_jwks.yaml

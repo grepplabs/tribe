@@ -1,0 +1,7 @@
+databaseChangeLog:
+- include:
+    file: liquibase/001_kms_keyset.yaml
+- include:
+    file: liquibase/002_jwks.yaml
+- include:
+    file: liquibase/003_oidc_jwks.yaml

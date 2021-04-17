@@ -6,11 +6,13 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/config"
+	"github.com/grepplabs/tribe/database/client"
 	"github.com/grepplabs/tribe/database/model"
 	"github.com/grepplabs/tribe/pkg/jwk"
 	"github.com/grepplabs/tribe/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"gopkg.in/square/go-jose.v2"
 	"os"
 	"time"
 )
@@ -25,9 +27,6 @@ type jwksCreateConfig struct {
 	alg string
 	use string
 	kid string
-
-	save         bool
-	masterSecret string
 }
 
 func (c *jwksCreateConfig) Validate() error {
@@ -57,7 +56,12 @@ func newJwksCreateCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-create")
-			result, err := runJwksCreate(logger, datastoreConfig, kmsConfig, cmdConfig)
+			dsClient, err := NewDatastoreClient(logger, datastoreConfig)
+			if err != nil {
+				log.Errorf("create datastore client failed: %v", err)
+				os.Exit(1)
+			}
+			result, err := NewJwksCreateCmd(logger, dsClient, kmsConfig).Run(cmdConfig)
 			if err != nil {
 				log.Errorf("jwks create command failed: %v", err)
 				os.Exit(1)
@@ -80,13 +84,24 @@ func newJwksCreateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&cmdConfig.use, "use", "sig", "How the key is meant to be used. One of: [sig, enc]")
 	cmd.Flags().StringVar(&cmdConfig.kid, "kid", "", "Unique key identifier. The Key ID is generated if not specified.")
 
-	cmd.Flags().BoolVar(&cmdConfig.save, "save", true, "Save the JWKS in persistent store")
-	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "KMS master secret")
-
 	return cmd
 }
 
-func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsConfig *config.KMSConfig, cmdConfig *jwksCreateConfig) (interface{}, error) {
+type jwksCreateCmd struct {
+	logger    log.Logger
+	dsClient  client.Client
+	kmsConfig *config.KMSConfig
+}
+
+func NewJwksCreateCmd(logger log.Logger, dsClient client.Client, kmsConfig *config.KMSConfig) *jwksCreateCmd {
+	return &jwksCreateCmd{
+		logger:    logger,
+		dsClient:  dsClient,
+		kmsConfig: kmsConfig,
+	}
+}
+
+func (c *jwksCreateCmd) Run(cmdConfig *jwksCreateConfig) (*jose.JSONWebKeySet, error) {
 	id := cmdConfig.jwksID
 	if id == "" {
 		id = uuid.NewString()
@@ -99,40 +114,35 @@ func runJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfig, k
 	if err != nil {
 		return nil, err
 	}
-	if cmdConfig.save {
-		dsClient, err := NewDatastoreClient(logger, datastoreConfig)
-		if err != nil {
-			return nil, err
-		}
-		kmsProvider, err := NewKMSProvider(logger, kmsConfig, cmdConfig.masterSecret)
-		if err != nil {
-			return nil, err
-		}
-		aead, keyURI, err := kmsProvider.NewAEAD(id)
-		if err != nil {
-			return nil, errors.Wrap(err, "Get AEAD failed")
-		}
-		bytes, err := json.Marshal(keys)
-		if err != nil {
-			return nil, err
-		}
-		encryptedKeys, err := aead.Encrypt(bytes, []byte{})
-		if err != nil {
-			return nil, errors.Wrap(err, "AEAD keys encryption failed")
-		}
-		jwks := &model.JWKS{
-			ID:            id,
-			CreatedAt:     time.Now(),
-			Kid:           kid,
-			Alg:           cmdConfig.alg,
-			Use:           cmdConfig.use,
-			KMSKeyURI:     keyURI,
-			EncryptedJwks: base64.StdEncoding.EncodeToString(encryptedKeys),
-		}
-		err = dsClient.API().CreateJWKS(context.Background(), jwks)
-		if err != nil {
-			return nil, err
-		}
+	// persist generated keys
+	kmsProvider, err := NewKMSProvider(c.logger, c.kmsConfig)
+	if err != nil {
+		return nil, err
+	}
+	aead, keyURI, err := kmsProvider.NewAEAD(id)
+	if err != nil {
+		return nil, errors.Wrap(err, "Get AEAD failed")
+	}
+	bytes, err := json.Marshal(keys)
+	if err != nil {
+		return nil, err
+	}
+	encryptedKeys, err := aead.Encrypt(bytes, []byte{})
+	if err != nil {
+		return nil, errors.Wrap(err, "AEAD keys encryption failed")
+	}
+	jwks := &model.JWKS{
+		ID:            id,
+		CreatedAt:     time.Now(),
+		Kid:           kid,
+		Alg:           cmdConfig.alg,
+		Use:           cmdConfig.use,
+		KMSKeyURI:     keyURI,
+		EncryptedJwks: base64.StdEncoding.EncodeToString(encryptedKeys),
+	}
+	err = c.dsClient.API().CreateJWKS(context.Background(), jwks)
+	if err != nil {
+		return nil, err
 	}
 	return keys, nil
 }

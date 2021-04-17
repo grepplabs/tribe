@@ -8,7 +8,10 @@ import (
 	"gopkg.in/square/go-jose.v2"
 )
 
-const privateKeyIDPrefix = "private"
+const (
+	privateKeyIDPrefix = "private"
+	publicKeyIDPrefix  = "public"
+)
 
 type JWKSGenerator interface {
 	Generate(id, alg, use string) (*jose.JSONWebKeySet, error)
@@ -57,13 +60,13 @@ func (g jwksGenerator) Generate(id, alg, use string) (*jose.JSONWebKeySet, error
 					Algorithm: alg,
 					Use:       use,
 					Key:       publicKey,
-					KeyID:     id,
+					KeyID:     g.keyID(publicKeyIDPrefix, id),
 				},
 				{
 					Algorithm: alg,
 					Use:       use,
 					Key:       privateKey,
-					KeyID:     fmt.Sprintf("%s-%s", privateKeyIDPrefix, id),
+					KeyID:     g.keyID(privateKeyIDPrefix, id),
 				},
 			},
 		}, nil
@@ -72,4 +75,8 @@ func (g jwksGenerator) Generate(id, alg, use string) (*jose.JSONWebKeySet, error
 	default:
 		return nil, errors.Errorf("unsupported alg: %s", alg)
 	}
+}
+
+func (g jwksGenerator) keyID(prefix, id string) string {
+	return fmt.Sprintf("%s-%s", prefix, id)
 }

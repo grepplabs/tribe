@@ -17,14 +17,14 @@ const (
 	vaultRefKeyURIPrefix = "hcvault://vault"
 )
 
-func registerKMSClient(logger log.Logger, kmsConfig *config.KMSConfig, masterSecret string) error {
+func registerKMSClient(logger log.Logger, kmsConfig *config.KMSConfig) error {
 	switch kmsConfig.Provider {
 	case "db":
 		dsClient, err := NewDatastoreClient(logger, kmsConfig.DatastoreConfig)
 		if err != nil {
 			return err
 		}
-		err = dbkms.RegisterKMSClient(logger, dsClient, masterSecret, kmsConfig.DatastoreConfig.Provider)
+		err = dbkms.RegisterKMSClient(logger, dsClient, kmsConfig.MasterSecret, kmsConfig.DatastoreConfig.Provider)
 		if err != nil {
 			return err
 		}
@@ -51,9 +51,8 @@ func registerKMSClient(logger log.Logger, kmsConfig *config.KMSConfig, masterSec
 }
 
 type kmsProvider struct {
-	logger       log.Logger
-	kmsConfig    *config.KMSConfig
-	masterSecret string
+	logger    log.Logger
+	kmsConfig *config.KMSConfig
 }
 
 type KMSProvider interface {
@@ -61,15 +60,14 @@ type KMSProvider interface {
 	NewAEAD(jwksID string) (aead tink.AEAD, refKeyURI string, err error)
 }
 
-func NewKMSProvider(logger log.Logger, kmsConfig *config.KMSConfig, masterSecret string) (KMSProvider, error) {
-	err := registerKMSClient(logger, kmsConfig, masterSecret)
+func NewKMSProvider(logger log.Logger, kmsConfig *config.KMSConfig) (KMSProvider, error) {
+	err := registerKMSClient(logger, kmsConfig)
 	if err != nil {
 		return nil, err
 	}
 	return &kmsProvider{
-		logger:       logger,
-		kmsConfig:    kmsConfig,
-		masterSecret: masterSecret,
+		logger:    logger,
+		kmsConfig: kmsConfig,
 	}, nil
 }
 

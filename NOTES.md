@@ -20,3 +20,6 @@
 - [ ] Kerberos
 - [ ] SAML
 
+* UI
+- [ ] React vs Vue 3
+- [ ] Electron ?

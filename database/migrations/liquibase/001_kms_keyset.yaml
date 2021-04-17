@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: "Michal Budzyn"
+      failOnError: true
+      runInTransaction: true
+      logicalFilePath: changeset/001_kms_keyset.yaml
+      changes:
+        - sqlFile:
+            path: postgres/000001_create-kms-keyset-table.up.sql
+            encoding: utf8
+
