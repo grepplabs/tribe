@@ -26,7 +26,6 @@ type jwksCreateConfig struct {
 
 	alg string
 	use string
-	kid string
 }
 
 func (c *jwksCreateConfig) Validate() error {
@@ -61,7 +60,12 @@ func newJwksCreateCmd() *cobra.Command {
 				log.Errorf("create datastore client failed: %v", err)
 				os.Exit(1)
 			}
-			result, err := NewJwksCreateCmd(logger, dsClient, kmsConfig).Run(cmdConfig)
+			kmsProvider, err := NewKMSProvider(logger, kmsConfig)
+			if err != nil {
+				log.Errorf("create kms provider failed: %v", err)
+				os.Exit(1)
+			}
+			result, err := NewJwksCreateCmd(logger, dsClient, kmsProvider).Run(cmdConfig)
 			if err != nil {
 				log.Errorf("jwks create command failed: %v", err)
 				os.Exit(1)
@@ -79,25 +83,24 @@ func newJwksCreateCmd() *cobra.Command {
 	cmd.Flags().AddFlagSet(kmsConfig.FlagSet())
 	cmd.Flags().AddFlagSet(outputConfig.FlagSet())
 
-	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks")
+	cmd.Flags().StringVar(&cmdConfig.jwksID, "jwks-id", "", "Identifier of the jwks used also a kid")
 	cmd.Flags().StringVar(&cmdConfig.alg, "alg", "RS256", "The specific rfc7518 JWA algorithm to be used to generated the key. One of: [HS256, HS384, HS512, RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384, PS512]")
 	cmd.Flags().StringVar(&cmdConfig.use, "use", "sig", "How the key is meant to be used. One of: [sig, enc]")
-	cmd.Flags().StringVar(&cmdConfig.kid, "kid", "", "Unique key identifier. The Key ID is generated if not specified.")
 
 	return cmd
 }
 
 type jwksCreateCmd struct {
-	logger    log.Logger
-	dsClient  client.Client
-	kmsConfig *config.KMSConfig
+	logger      log.Logger
+	dsClient    client.Client
+	kmsProvider KMSProvider
 }
 
-func NewJwksCreateCmd(logger log.Logger, dsClient client.Client, kmsConfig *config.KMSConfig) *jwksCreateCmd {
+func NewJwksCreateCmd(logger log.Logger, dsClient client.Client, kmsProvider KMSProvider) *jwksCreateCmd {
 	return &jwksCreateCmd{
-		logger:    logger,
-		dsClient:  dsClient,
-		kmsConfig: kmsConfig,
+		logger:      logger,
+		dsClient:    dsClient,
+		kmsProvider: kmsProvider,
 	}
 }
 
@@ -106,20 +109,13 @@ func (c *jwksCreateCmd) Run(cmdConfig *jwksCreateConfig) (*jose.JSONWebKeySet, e
 	if id == "" {
 		id = uuid.NewString()
 	}
-	kid := cmdConfig.kid
-	if kid == "" {
-		kid = uuid.NewString()
-	}
+	kid := id
 	keys, err := jwk.NewJWKSGenerator().Generate(kid, cmdConfig.alg, cmdConfig.use)
 	if err != nil {
 		return nil, err
 	}
 	// persist generated keys
-	kmsProvider, err := NewKMSProvider(c.logger, c.kmsConfig)
-	if err != nil {
-		return nil, err
-	}
-	aead, keyURI, err := kmsProvider.NewAEAD(id)
+	aead, keyURI, err := c.kmsProvider.NewAEAD(id)
 	if err != nil {
 		return nil, errors.Wrap(err, "Get AEAD failed")
 	}

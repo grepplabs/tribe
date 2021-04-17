@@ -16,11 +16,11 @@ type kmsKeysetManager struct {
 	bucketName string
 }
 
-func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
-	if kmsKeyset == nil {
-		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
+func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, record *model.KMSKeyset) error {
+	if record == nil {
+		return service.ErrIllegalArgument{Reason: "Input parameter record is missing"}
 	}
-	objectName := m.objectNameForID(kmsKeyset.ID)
+	objectName := m.objectNameForID(record.ID)
 	exists, err := m.existsObjectWithName(ctx, objectName)
 	if err != nil {
 		return err
@@ -28,9 +28,9 @@ func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	if exists {
 		return service.ErrAlreadyExists{Reason: objectName}
 	}
-	data, err := json.Marshal(kmsKeyset)
+	data, err := json.Marshal(record)
 	if err != nil {
-		return errors.Wrap(err, "Marshal kms keyset failed")
+		return errors.Wrap(err, "Marshal KMSKeyset failed")
 	}
 	_, err = m.mc.PutObject(ctx, m.bucketName, objectName, bytes.NewBuffer(data), int64(len(data)), minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
@@ -38,11 +38,12 @@ func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	}
 	return nil
 }
-func (m kmsKeysetManager) GetKMSKeyset(ctx context.Context, keysetID string) (*model.KMSKeyset, error) {
-	if keysetID == "" {
-		return nil, service.ErrIllegalArgument{Reason: "Input parameter keysetID is missing"}
+
+func (m kmsKeysetManager) GetKMSKeyset(ctx context.Context, id string) (*model.KMSKeyset, error) {
+	if id == "" {
+		return nil, service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
-	return m.getObject(ctx, m.objectNameForID(keysetID))
+	return m.getObject(ctx, m.objectNameForID(id))
 }
 
 func (m kmsKeysetManager) getObject(ctx context.Context, objectName string) (*model.KMSKeyset, error) {
@@ -51,19 +52,19 @@ func (m kmsKeysetManager) getObject(ctx context.Context, objectName string) (*mo
 		return nil, errors.Wrap(err, "GetObject failed")
 	}
 	defer reader.Close()
-	var kmsKeyset model.KMSKeyset
-	err = json.NewDecoder(reader).Decode(&kmsKeyset)
+	var record model.KMSKeyset
+	err = json.NewDecoder(reader).Decode(&record)
 	if err != nil {
 		return nil, err
 	}
-	return &kmsKeyset, nil
+	return &record, nil
 }
 
-func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) error {
-	if keysetID == "" {
-		return service.ErrIllegalArgument{Reason: "Input parameter realmID is missing"}
+func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, id string) error {
+	if id == "" {
+		return service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
-	objectName := m.objectNameForID(keysetID)
+	objectName := m.objectNameForID(id)
 	err := m.mc.RemoveObject(ctx, m.bucketName, objectName, minio.RemoveObjectOptions{})
 	if err != nil {
 		return errors.Wrap(err, "RemoveObject failed")
@@ -71,14 +72,14 @@ func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) 
 	return nil
 }
 
-func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
-	if kmsKeyset == nil {
-		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
+func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, record *model.KMSKeyset) error {
+	if record == nil {
+		return service.ErrIllegalArgument{Reason: "Input parameter record is missing"}
 	}
-	objectName := m.objectNameForID(kmsKeyset.ID)
-	data, err := json.Marshal(kmsKeyset)
+	objectName := m.objectNameForID(record.ID)
+	data, err := json.Marshal(record)
 	if err != nil {
-		return errors.Wrap(err, "Marshal kms keyset failed")
+		return errors.Wrap(err, "Marshal KMSKeyset failed")
 	}
 	_, err = m.mc.PutObject(ctx, m.bucketName, objectName, bytes.NewBuffer(data), int64(len(data)), minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {

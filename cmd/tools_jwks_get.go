@@ -55,7 +55,17 @@ func newJwksGetCmd() *cobra.Command {
 			producer := outputConfig.MustGetProducer()
 
 			logger := log.NewLogger(logConfig.Configuration).WithName("jwks-get")
-			result, err := runJwksGet(logger, datastoreConfig, kmsConfig, cmdConfig)
+			dsClient, err := NewDatastoreClient(logger, datastoreConfig)
+			if err != nil {
+				log.Errorf("create datastore client failed: %v", err)
+				os.Exit(1)
+			}
+			kmsProvider, err := NewKMSProvider(logger, kmsConfig)
+			if err != nil {
+				log.Errorf("create kms provider failed: %v", err)
+				os.Exit(1)
+			}
+			result, err := NewJwksGetCmd(logger, dsClient, kmsProvider).Run(cmdConfig)
 			if err != nil {
 				log.Errorf("jwks get command failed: %v", err)
 				os.Exit(1)
@@ -84,12 +94,22 @@ func newJwksGetCmd() *cobra.Command {
 	return cmd
 }
 
-func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsConfig *config.KMSConfig, cmdConfig *jwksGetConfig) (interface{}, error) {
-	dsClient, err := NewDatastoreClient(logger, datastoreConfig)
-	if err != nil {
-		return nil, err
+type jwksCreateGet struct {
+	logger      log.Logger
+	dsClient    client.Client
+	kmsProvider KMSProvider
+}
+
+func NewJwksGetCmd(logger log.Logger, dsClient client.Client, kmsProvider KMSProvider) *jwksCreateGet {
+	return &jwksCreateGet{
+		logger:      logger,
+		dsClient:    dsClient,
+		kmsProvider: kmsProvider,
 	}
-	jwks, err := getJwks(dsClient, cmdConfig)
+}
+
+func (c *jwksCreateGet) Run(cmdConfig *jwksGetConfig) (*jose.JSONWebKeySet, error) {
+	jwks, err := c.getJwks(cmdConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +117,7 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsC
 	if err != nil {
 		return nil, errors.Wrapf(err, "base64 decode of JWKS ID failed: %s", cmdConfig.jwksID)
 	}
-	kmsProvider, err := NewKMSProvider(logger, kmsConfig)
-	if err != nil {
-		return nil, err
-	}
-	aead, err := kmsProvider.AEADFromKeyURI(jwks.KMSKeyURI)
+	aead, err := c.kmsProvider.AEADFromKeyURI(jwks.KMSKeyURI)
 	if err != nil {
 		return nil, err
 	}
@@ -117,11 +133,11 @@ func runJwksGet(logger log.Logger, datastoreConfig *config.DatastoreConfig, kmsC
 	return &result, nil
 }
 
-func getJwks(dsClient client.Client, cmdConfig *jwksGetConfig) (*model.JWKS, error) {
+func (c *jwksCreateGet) getJwks(cmdConfig *jwksGetConfig) (*model.JWKS, error) {
 	if cmdConfig.jwksID != "" {
-		return getJwksByID(dsClient, cmdConfig.jwksID)
+		return getJwksByID(c.dsClient, cmdConfig.jwksID)
 	} else {
-		jwks, err := dsClient.API().GetJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
+		jwks, err := c.dsClient.API().GetJWKSByKidUse(context.Background(), cmdConfig.kid, cmdConfig.use)
 		if err != nil {
 			return nil, err
 		}

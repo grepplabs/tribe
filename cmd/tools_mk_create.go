@@ -69,7 +69,7 @@ func newMkCreateCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&cmdConfig.keysetID, "keyset-id", "", "Identifier of the keyset")
 	cmd.Flags().StringVar(&cmdConfig.masterSecret, "master-secret", "", "Master secret")
-	// flag will be optional when
+
 	_ = cmd.MarkFlagRequired("master-secret")
 
 	return cmd

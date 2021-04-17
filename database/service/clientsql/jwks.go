@@ -12,13 +12,13 @@ type jwksManager struct {
 	dbs db.Session
 }
 
-func (m jwksManager) CreateJWKS(ctx context.Context, jwks *model.JWKS) error {
-	if jwks == nil {
-		return service.ErrIllegalArgument{Reason: "Input parameter jwks is missing"}
+func (m jwksManager) CreateJWKS(ctx context.Context, record *model.JWKS) error {
+	if record == nil {
+		return service.ErrIllegalArgument{Reason: "Input parameter record is missing"}
 	}
-	_, err := m.dbs.WithContext(ctx).Collection(jwks.TableName()).Insert(jwks)
+	_, err := m.dbs.WithContext(ctx).Collection(record.TableName()).Insert(record)
 	if err != nil {
-		return errors.Wrap(err, "insert jwks")
+		return errors.Wrap(err, "insert record")
 	}
 	return nil
 }
@@ -27,15 +27,15 @@ func (m jwksManager) GetJWKS(ctx context.Context, id string) (*model.JWKS, error
 	if id == "" {
 		return nil, service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
-	var jwks model.JWKS
-	err := m.dbs.WithContext(ctx).Collection(jwks.TableName()).Find(db.Cond{"id": id}).One(&jwks)
+	var record model.JWKS
+	err := m.dbs.WithContext(ctx).Collection(record.TableName()).Find(db.Cond{"id": id}).One(&record)
 	if err != nil {
 		if errors.Is(err, db.ErrNoMoreRows) {
 			return nil, nil
 		}
-		return nil, errors.Wrap(err, "find jwks")
+		return nil, errors.Wrap(err, "find record")
 	}
-	return &jwks, nil
+	return &record, nil
 }
 
 func (m jwksManager) GetJWKSByKidUse(ctx context.Context, kid string, use string) (*model.JWKS, error) {
@@ -66,8 +66,8 @@ func (m jwksManager) DeleteJWKSByKidUse(ctx context.Context, kid string, use str
 	if kid == "" || use == "" {
 		return service.ErrIllegalArgument{Reason: "Input parameter kid/use is missing"}
 	}
-	var jwks model.JWKS
-	err := m.dbs.WithContext(ctx).Collection(jwks.TableName()).Find(db.Cond{"kid": kid, "use": use}).Delete()
+	var record model.JWKS
+	err := m.dbs.WithContext(ctx).Collection(record.TableName()).Find(db.Cond{"kid": kid, "use": use}).Delete()
 	return errors.Wrap(err, "delete kid/use")
 }
 

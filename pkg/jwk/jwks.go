@@ -1,16 +1,19 @@
 package jwk
 
 import (
+	"crypto/ecdsa"
+	"crypto/rsa"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/grepplabs/tribe/pkg/jwk/keygen"
 	"github.com/pkg/errors"
+	"golang.org/x/crypto/ed25519"
 	"gopkg.in/square/go-jose.v2"
 )
 
 const (
-	privateKeyIDPrefix = "private"
-	publicKeyIDPrefix  = "public"
+	privateKeyIDPrefix = "private-"
+	publicKeyIDPrefix  = ""
 )
 
 type JWKSGenerator interface {
@@ -78,5 +81,31 @@ func (g jwksGenerator) Generate(id, alg, use string) (*jose.JSONWebKeySet, error
 }
 
 func (g jwksGenerator) keyID(prefix, id string) string {
-	return fmt.Sprintf("%s-%s", prefix, id)
+	return fmt.Sprintf("%s%s", prefix, id)
+}
+
+func IsPublic(k *jose.JSONWebKey) bool {
+	switch k.Key.(type) {
+	case ed25519.PublicKey:
+		return true
+	case *ecdsa.PublicKey:
+		return true
+	case *rsa.PublicKey:
+		return true
+	default:
+		return false
+	}
+}
+
+func IsPrivate(k *jose.JSONWebKey) bool {
+	switch k.Key.(type) {
+	case ed25519.PrivateKey:
+		return true
+	case *ecdsa.PrivateKey:
+		return true
+	case *rsa.PrivateKey:
+		return true
+	default:
+		return false
+	}
 }

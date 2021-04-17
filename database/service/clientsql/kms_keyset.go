@@ -22,38 +22,38 @@ func (m kmsKeysetManager) CreateKMSKeyset(ctx context.Context, kmsKeyset *model.
 	}
 	return nil
 }
-func (m kmsKeysetManager) GetKMSKeyset(ctx context.Context, keysetID string) (*model.KMSKeyset, error) {
-	if keysetID == "" {
-		return nil, service.ErrIllegalArgument{Reason: "Input parameter keysetID is missing"}
+func (m kmsKeysetManager) GetKMSKeyset(ctx context.Context, id string) (*model.KMSKeyset, error) {
+	if id == "" {
+		return nil, service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
-	var kmsKeyset model.KMSKeyset
-	err := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find(db.Cond{"id": keysetID}).One(&kmsKeyset)
+	var record model.KMSKeyset
+	err := m.dbs.WithContext(ctx).Collection(record.TableName()).Find(db.Cond{"id": id}).One(&record)
 	if err != nil {
 		if errors.Is(err, db.ErrNoMoreRows) {
 			return nil, nil
 		}
-		return nil, errors.Wrap(err, "find kmsKeyset")
+		return nil, errors.Wrap(err, "find KMSKeyset")
 	}
-	return &kmsKeyset, nil
+	return &record, nil
 }
 
-func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, keysetID string) error {
-	if keysetID == "" {
-		return service.ErrIllegalArgument{Reason: "Input parameter realmID is missing"}
+func (m kmsKeysetManager) DeleteKMSKeyset(ctx context.Context, id string) error {
+	if id == "" {
+		return service.ErrIllegalArgument{Reason: "Input parameter id is missing"}
 	}
-	var kmsKeyset model.KMSKeyset
-	err := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find(db.Cond{"id": keysetID}).Delete()
-	return errors.Wrap(err, "delete kmsKeyset")
+	var record model.KMSKeyset
+	err := m.dbs.WithContext(ctx).Collection(record.TableName()).Find(db.Cond{"id": id}).Delete()
+	return errors.Wrap(err, "delete KMSKeyset")
 }
 
-func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, kmsKeyset *model.KMSKeyset) error {
-	if kmsKeyset == nil {
-		return service.ErrIllegalArgument{Reason: "Input parameter kmsKeyset is missing"}
+func (m kmsKeysetManager) UpdateKMSKeyset(ctx context.Context, record *model.KMSKeyset) error {
+	if record == nil {
+		return service.ErrIllegalArgument{Reason: "Input parameter record is missing"}
 	}
-	err := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find(db.Cond{"id": kmsKeyset.ID}).Update(kmsKeyset)
-	return errors.Wrap(err, "update kmsKeyset")
-
+	err := m.dbs.WithContext(ctx).Collection(record.TableName()).Find(db.Cond{"id": record.ID}).Update(record)
+	return errors.Wrap(err, "update KMSKeyset")
 }
+
 func (m kmsKeysetManager) ListKMSKeysets(ctx context.Context, offset *int64, limit *int64) (*model.KMSKeysetList, error) {
 	var kmsKeyset model.KMSKeyset
 	result := m.dbs.WithContext(ctx).Collection(kmsKeyset.TableName()).Find().OrderBy("created_at")

@@ -22,6 +22,8 @@ type oidcJwksCreateConfig struct {
 
 	currentJwksID string
 	nextJwksID    string
+
+	alg string
 }
 
 func (c *oidcJwksCreateConfig) Validate() error {
@@ -72,6 +74,7 @@ func newOidcJwksCreateCmd() *cobra.Command {
 	cmd.Flags().StringVar(&cmdConfig.oidcJwksID, "oidc-jwks-id", "", "Identifier of the oidc jwks")
 	cmd.Flags().StringVar(&cmdConfig.currentJwksID, "current-jwks-id", "", "Current JWKS ID")
 	cmd.Flags().StringVar(&cmdConfig.nextJwksID, "next-jwks-id", "", "Next JWKS ID to use")
+	cmd.Flags().StringVar(&cmdConfig.alg, "alg", "RS256", "The specific asymmetric rfc7518 JWA algorithm to be used to generated the key. One of: [RS256, RS384, RS512, ES256, ES384, ES512, PS256, PS384, PS512]")
 
 	return cmd
 }
@@ -81,12 +84,16 @@ func runOidcJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfi
 	if err != nil {
 		return nil, err
 	}
-	jwksCreate := NewJwksCreateCmd(logger, dsClient, kmsConfig)
-	currentJwksID, err := oidcJwksCreateOrGet(cmdConfig.currentJwksID, jwksCreate, dsClient)
+	kmsProvider, err := NewKMSProvider(logger, kmsConfig)
 	if err != nil {
 		return nil, err
 	}
-	nextJwksID, err := oidcJwksCreateOrGet(cmdConfig.nextJwksID, jwksCreate, dsClient)
+	jwksCreate := NewJwksCreateCmd(logger, dsClient, kmsProvider)
+	currentJwksID, err := oidcJwksCreateOrGet(cmdConfig.currentJwksID, cmdConfig.alg, jwksCreate, dsClient)
+	if err != nil {
+		return nil, err
+	}
+	nextJwksID, err := oidcJwksCreateOrGet(cmdConfig.nextJwksID, cmdConfig.alg, jwksCreate, dsClient)
 	if err != nil {
 		return nil, err
 	}
@@ -116,26 +123,16 @@ func runOidcJwksCreate(logger log.Logger, datastoreConfig *config.DatastoreConfi
 	return oidcJWKS, nil
 }
 
-func oidcJwksCreateOrGet(jwksID string, jwksCreate *jwksCreateCmd, dsClient client.Client) (string, error) {
-	const defaultAlg = "RS256"
-	allowedAlg := map[string]struct{}{
-		"RS256": {},
-		"RS384": {},
-		"RS512": {},
-		"ES256": {},
-		"ES384": {},
-		"ES512": {},
-		"PS256": {},
-		"PS384": {},
-		"PS512": {},
-	}
+func oidcJwksCreateOrGet(jwksID string, alg string, jwksCreate *jwksCreateCmd, dsClient client.Client) (string, error) {
 	if jwksID == "" {
+		if err := checkAllowedOidcJwks(alg); err != nil {
+			return "", err
+		}
 		jwksID = uuid.NewString()
 		_, err := jwksCreate.Run(&jwksCreateConfig{
 			jwksID: jwksID,
-			alg:    defaultAlg,
+			alg:    alg,
 			use:    "sig",
-			kid:    jwksID,
 		})
 		if err != nil {
 			return "", err
@@ -149,9 +146,30 @@ func oidcJwksCreateOrGet(jwksID string, jwksCreate *jwksCreateCmd, dsClient clie
 		if key.Use != "sig" {
 			return "", errors.Errorf("OIDC JWKS requires use 'sig', but got '%s'", key.Use)
 		}
-		if _, ok := allowedAlg[key.Alg]; !ok {
-			return "", errors.Errorf("OIDC JWKS asymmetric alg, but '%s'", key.Alg)
+		if err := checkAllowedOidcJwks(key.Alg); err != nil {
+			return "", err
 		}
 		return jwksID, nil
 	}
+}
+
+var (
+	allowedOidcAlgos = map[string]struct{}{
+		"RS256": {},
+		"RS384": {},
+		"RS512": {},
+		"ES256": {},
+		"ES384": {},
+		"ES512": {},
+		"PS256": {},
+		"PS384": {},
+		"PS512": {},
+	}
+)
+
+func checkAllowedOidcJwks(alg string) error {
+	if _, ok := allowedOidcAlgos[alg]; !ok {
+		return errors.Errorf("OIDC JWKS requires default asymmetric alg, but '%s'", alg)
+	}
+	return nil
 }

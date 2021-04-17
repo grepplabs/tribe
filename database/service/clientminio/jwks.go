@@ -19,11 +19,11 @@ type jwksManager struct {
 	bucketName string
 }
 
-func (m jwksManager) CreateJWKS(ctx context.Context, jwks *model.JWKS) error {
-	if jwks == nil {
-		return service.ErrIllegalArgument{Reason: "Input parameter jwks is missing"}
+func (m jwksManager) CreateJWKS(ctx context.Context, record *model.JWKS) error {
+	if record == nil {
+		return service.ErrIllegalArgument{Reason: "Input parameter record is missing"}
 	}
-	objectName := m.objectNameForID(jwks.ID)
+	objectName := m.objectNameForID(record.ID)
 	exists, err := m.existsObjectWithName(ctx, objectName)
 	if err != nil {
 		return err
@@ -31,16 +31,16 @@ func (m jwksManager) CreateJWKS(ctx context.Context, jwks *model.JWKS) error {
 	if exists {
 		return service.ErrAlreadyExists{Reason: objectName}
 	}
-	exists, otherObjectName, err := m.existsObjectWithKidUse(ctx, jwks.Kid, jwks.Use)
+	exists, otherObjectName, err := m.existsObjectWithKidUse(ctx, record.Kid, record.Use)
 	if err != nil {
 		return err
 	}
 	if exists {
-		return service.ErrAlreadyExists{Reason: fmt.Sprintf("object '%s' with kid '%s' and use '%s'", otherObjectName, jwks.Kid, jwks.Use)}
+		return service.ErrAlreadyExists{Reason: fmt.Sprintf("object '%s' with kid '%s' and use '%s'", otherObjectName, record.Kid, record.Use)}
 	}
-	data, err := json.Marshal(jwks)
+	data, err := json.Marshal(record)
 	if err != nil {
-		return errors.Wrap(err, "Marshal jwks failed")
+		return errors.Wrap(err, "Marshal record failed")
 	}
 	_, err = m.mc.PutObject(ctx, m.bucketName, objectName, bytes.NewBuffer(data), int64(len(data)), minio.PutObjectOptions{ContentType: "application/json"})
 	if err != nil {
